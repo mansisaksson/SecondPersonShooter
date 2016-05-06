@@ -89,14 +89,16 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 	// Rotate Player Stuff
 	else
 	{
-		FVector InputVector(-xTurnRate, yTurnRate, 0.f);
-		FVector NewVector = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
+		if (!(xTurnRate == 0.f && yTurnRate == 0.f))
+		{
+			FVector InputVector(-xTurnRate, yTurnRate, 0.f);
+			FVector NewVector = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
+			
+			PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), NewVector.Rotation(), 20.f * DeltaSeconds));
 
-		NewVector = FVector(FMath::FInterpTo(GetControlRotation().Vector().X, NewVector.X, DeltaSeconds, 20.f), FMath::FInterpTo(GetControlRotation().Vector().Y, NewVector.Y, DeltaSeconds, 20.f), 0);
-		PlayerController->SetControlRotation(NewVector.Rotation());
-
-		xTurnRate = GetControlRotation().Vector().X;
-		xTurnRate = GetControlRotation().Vector().Y;
+			xTurnRate = GetControlRotation().Vector().X;
+			xTurnRate = GetControlRotation().Vector().Y;
+		}
 	}
 
 	// Fire Weapon Stuff
@@ -265,7 +267,7 @@ void APlayerCharacter::FaceUp(float Value)
 {
 	if (dead == false)
 	{
-		if (Value != 0.f)
+		//if (Value != 0.f)
 			xTurnRate = Value;
 	}
 }
@@ -274,7 +276,7 @@ void APlayerCharacter::FaceRight(float Value)
 {
 	if (dead == false)
 	{
-		if (Value != 0.f)
+		//if (Value != 0.f)
 			yTurnRate = Value;
 	}
 }

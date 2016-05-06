@@ -31,6 +31,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	int32 scoreValue;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float TurnRate;
+
 	float DefaultWalkSpeed;
 protected:
 
@@ -43,6 +46,8 @@ protected:
 	float Health;
 
 	bool isAlive;
+
+	FRotator OldRotation;
 
 	UNavigationSystem* NavSystem;
 	class AAIController* AIController;

@@ -11,12 +11,13 @@ AEnemyCharacter::AEnemyCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
+	TurnRate = 15.f;
 	Health = 100.f;
 	scoreValue = 500.f;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
@@ -37,6 +38,8 @@ void AEnemyCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemyCharacter::OnSeePawn);
 	PawnSensor->OnHearNoise.AddDynamic(this, &AEnemyCharacter::OnHearNoise);
+
+	OldRotation = GetActorRotation();
 }
 
 void AEnemyCharacter::BeginPlay()
@@ -59,12 +62,17 @@ void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (PlayerRef == NULL)
-		PlayerRef = DefaultGameMode->GetPlayerRef();
-	else
+	if (isAlive)
 	{
-		NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
-		//NavSystem->SimpleMoveToActor(GetController(), PlayerRef);
+		if (PlayerRef == NULL)
+			PlayerRef = DefaultGameMode->GetPlayerRef();
+		else
+		{
+			NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
+
+			OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+			FaceRotation(OldRotation);
+		}
 	}
 }
 
