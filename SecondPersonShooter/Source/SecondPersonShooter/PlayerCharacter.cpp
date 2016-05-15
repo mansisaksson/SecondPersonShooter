@@ -194,12 +194,12 @@ void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp,
 				GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 				GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 				GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+				GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
 
 				GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-				GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 				GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 				GetCapsuleComponent()->SetCollisionObjectType(ECC_WorldDynamic);
-
 			}
 			else
 			{

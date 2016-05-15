@@ -11,7 +11,7 @@ AEnemyCharacter::AEnemyCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	TurnRate = 0.1f;
+	TurnRate = 5.f;
 	Health = 100.f;
 	scoreValue = 500.f;
 
@@ -64,10 +64,10 @@ void AEnemyCharacter::Tick(float DeltaTime)
 			PlayerRef = DefaultGameMode->GetPlayerRef();
 		else
 		{
-			//NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
+			NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
 
-			//OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
-			//FaceRotation(OldRotation);
+			OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+			FaceRotation(OldRotation);
 		}
 	}
 }
@@ -84,9 +84,11 @@ bool AEnemyCharacter::Hit(FHitResult HitResult, FVector FromAnge, float Damage)
 		GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+		GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
 
+		GetCapsuleComponent()->SetSimulatePhysics(false);
 		GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 		GetCapsuleComponent()->SetCollisionObjectType(ECC_WorldDynamic);
 
