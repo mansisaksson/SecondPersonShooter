@@ -203,8 +203,8 @@ void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp,
 			}
 			else
 			{
-				PossessedEnemy = enemy;
-				PlayerController->SetViewTargetWithBlend(enemy);
+				//PossessedEnemy = enemy;
+				//PlayerController->SetViewTargetWithBlend(enemy);
 
 				FadedTime = 0;
 				FadeMax = 0.7;
@@ -413,23 +413,25 @@ void APlayerCharacter::FireWeapon()
 					if (enemySurvived == false)
 					{
 						SwapRight();
-
+						Debug::Log(FString("DÅ") );
 						TVFadedTime = 0;
-						TVFadeMin = 1.0;
-						TVFadeMax = 1.0;
-						TVFadeTime = 0.3;
-						TVFadeResetSpeed = 0.4;
-						TVFadeResetDelay = 0.5;
+						TVFadeMin = 0.5;
+						TVFadeMax = 0.5;
+						TVFadeTime = 0.2;
+						TVFadeResetSpeed = 0.15;
+						TVFadeResetDelay = 0.0;
 						
 					}
 					else
 					{
+
+						Debug::Log(FString("HEJ"));
 						TVFadedTime = 0;
-						TVFadeMax = 0.5;
-						TVFadeTime = 0.3;
-						TVFadeMin = 0.5;
+						TVFadeMin = 0.4;
+						TVFadeMax = 0.4;
+						TVFadeTime = 0.3;						
 						TVFadeResetSpeed = 0.2;
-						TVFadeResetDelay = 0.3;
+						TVFadeResetDelay = 0.2;
 					}
 				}
 			}
@@ -448,9 +450,9 @@ void APlayerCharacter::Swap(class AEnemyCharacter* Enemy)
 		if (Enemy != NULL)
 		{
 			TVFadedTime = 0;
-			TVFadeMax = 0.3;
+			TVFadeMax = 0.2;
 			TVFadeTime = 0.2;
-			TVFadeMin = 0.3;
+			TVFadeMin = 0.2;
 			TVFadeResetSpeed = 0.2;
 			TVFadeResetDelay = 0.2;
 			TVFadeValue = FMath::Lerp(TVFadeMin, TVFadeMax, TVFadedTime); 
