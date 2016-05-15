@@ -35,6 +35,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
 	bool FadeRed;
 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
+	float TVFadeValue;
+	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
 	int32 score;
 
@@ -87,6 +92,13 @@ protected:
 	float FadedTime;
 	float FadeMax;
 	float FadeMin;
+
+	float TVFadeResetSpeed;
+	float TVFadeResetDelay;
+	float TVFadeTime;
+	float TVFadedTime;
+	float TVFadeMax;
+	float TVFadeMin;
 
 	bool dead;
 	int hp;
