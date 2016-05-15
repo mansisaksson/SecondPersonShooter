@@ -414,11 +414,17 @@ void APlayerCharacter::FireWeapon()
 					{
 						SwapRight();
 						TVFadedTime = 0;
-						TVFadeMin = 1.0;
-						TVFadeMax = 1.0;
+						TVFadeMin = 0.5;
+						TVFadeMax = 0.5;
 						TVFadeTime = 0.2;
 						TVFadeResetSpeed = 0.4;
 						TVFadeResetDelay = 0.3;
+						/*
+						Borde funka att bara använda: (har inte testat)
+						TVFadeValue = x;
+						TVFadeResetSpeed = y;
+						TVFadeResetDelay = z;
+						*/
 						
 					}
 					else
