@@ -7,14 +7,8 @@ class AEnemyCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* Camera;
-
-	UPROPERTY(VisibleDefaultsOnly, Category = Sensor, meta = (AllowPrivateAccess = "true"))
-	class UPawnSensingComponent* PawnSensor;
 
 public:
 	AEnemyCharacter();
@@ -25,7 +19,6 @@ public:
 
 	bool Hit(FHitResult HitResult, FVector FromAnge, float Damage);
 
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return Camera; }
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
@@ -36,11 +29,6 @@ public:
 
 	float DefaultWalkSpeed;
 protected:
-
-	UFUNCTION()
-	void OnHearNoise(APawn *OtherActor, const FVector &Location, float Volume);
-	UFUNCTION()
-	void OnSeePawn(APawn *OtherPawn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float Health;

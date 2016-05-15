@@ -11,7 +11,7 @@ AEnemyCharacter::AEnemyCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	TurnRate = 15.f;
+	TurnRate = 0.1f;
 	Health = 100.f;
 	scoreValue = 500.f;
 
@@ -26,18 +26,14 @@ AEnemyCharacter::AEnemyCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->AttachTo(GetMesh());
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera2"));
+	Camera->AttachTo(RootComponent);
 	Camera->bUsePawnControlRotation = false;
-	
-	PawnSensor = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensor"));
 }
 
 void AEnemyCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemyCharacter::OnSeePawn);
-	PawnSensor->OnHearNoise.AddDynamic(this, &AEnemyCharacter::OnHearNoise);
 
 	OldRotation = GetActorRotation();
 }
@@ -68,10 +64,10 @@ void AEnemyCharacter::Tick(float DeltaTime)
 			PlayerRef = DefaultGameMode->GetPlayerRef();
 		else
 		{
-			NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
+			//NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
 
-			OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
-			FaceRotation(OldRotation);
+			//OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+			//FaceRotation(OldRotation);
 		}
 	}
 }
@@ -101,14 +97,4 @@ bool AEnemyCharacter::Hit(FHitResult HitResult, FVector FromAnge, float Damage)
 	}
 	
 	return isAlive;
-}
-
-void AEnemyCharacter::OnSeePawn(APawn *OtherPawn)
-{
-	NavSystem->SimpleMoveToActor(GetController(), OtherPawn);
-}
-
-void AEnemyCharacter::OnHearNoise(APawn *OtherActor, const FVector &Location, float Volume)
-{
-
 }
