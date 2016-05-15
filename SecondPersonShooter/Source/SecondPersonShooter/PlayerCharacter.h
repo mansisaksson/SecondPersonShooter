@@ -49,6 +49,9 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return Camera; }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	class AEnemyCharacter* GetPossessedEnemy() { return PossessedEnemy; }
+
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 

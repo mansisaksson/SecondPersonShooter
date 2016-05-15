@@ -413,25 +413,23 @@ void APlayerCharacter::FireWeapon()
 					if (enemySurvived == false)
 					{
 						SwapRight();
-						Debug::Log(FString("DÅ") );
 						TVFadedTime = 0;
-						TVFadeMin = 0.5;
-						TVFadeMax = 0.5;
+						TVFadeMin = 1.0;
+						TVFadeMax = 1.0;
 						TVFadeTime = 0.2;
-						TVFadeResetSpeed = 0.15;
-						TVFadeResetDelay = 0.0;
+						TVFadeResetSpeed = 0.4;
+						TVFadeResetDelay = 0.3;
 						
 					}
 					else
 					{
 
-						Debug::Log(FString("HEJ"));
 						TVFadedTime = 0;
 						TVFadeMin = 0.4;
 						TVFadeMax = 0.4;
-						TVFadeTime = 0.3;						
+						TVFadeTime = 0.1;						
 						TVFadeResetSpeed = 0.2;
-						TVFadeResetDelay = 0.2;
+						TVFadeResetDelay = 0.0;
 					}
 				}
 			}
