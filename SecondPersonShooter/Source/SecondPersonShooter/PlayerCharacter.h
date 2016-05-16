@@ -6,17 +6,13 @@ UCLASS(config=Game)
 class APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* Camera;
-
-	UPROPERTY(VisibleAnywhere, Category = Player, meta = (AllowPrivateAccesss = "true"))
+	
+	UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* BulletSpawnComp;
 
-	UPROPERTY(VisibleAnywhere, Category = Player, meta = (AllowPrivateAccesss = "true"))
+	UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* GunMesh;
 
 public:
@@ -25,35 +21,16 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	float BaseTurnRate;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	float BaseLookUpRate;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
-	float FadeDarkness;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
-	bool FadeRed;
-
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
-	float TVFadeValue;
-	
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
-	int32 score;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
-	int32 hp;
-
 	UFUNCTION()
 	void OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return Camera; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class AEnemyCharacter* GetPossessedEnemy() { return PossessedEnemy; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	float GetRotationFromEnemy();
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
@@ -75,6 +52,25 @@ protected:
 	void StopFire();
 	void FireWeapon();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	float BaseTurnRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	float BaseLookUpRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float FadeDarkness;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float TVFadeValue;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float ShotsPerSecond;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	bool FadeRed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	int32 score;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	int32 hp;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	USoundBase* FireSound;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
@@ -82,12 +78,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* HitSparks;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	float ShotsPerSecond;
-
 	class AEnemyCharacter* PossessedEnemy;
 	class ADefaultGameMode* DefaultGameMode;
 	APlayerController* PlayerController;
+	FVector RelativeInputRotation;
 
 	bool bIsFiring;
 	float TimeSinceFire;

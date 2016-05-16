@@ -32,11 +32,11 @@ APlayerCharacter::APlayerCharacter()
 	Camera->AttachParent = GetCapsuleComponent();
 	Camera->bUsePawnControlRotation = false;
 
-	GunMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Gun Mesh"));
-	GunMesh->AttachTo(GetMesh(), TEXT("GunHand"), EAttachLocation::SnapToTargetIncludingScale, true);
+	GunMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GunMesh"));
+	GunMesh->AttachTo(GetMesh(), TEXT("GunHand"), EAttachLocation::SnapToTarget);
 
-	BulletSpawnComp = CreateDefaultSubobject<USceneComponent>(TEXT("Bullet Origin"));
-	BulletSpawnComp->AttachTo(GetMesh());
+	BulletSpawnComp = CreateDefaultSubobject<USceneComponent>(TEXT("BulletSpawnLocation"));
+	BulletSpawnComp->AttachTo(GunMesh);
 
 	
 	FadeDarkness = 0;
@@ -100,9 +100,9 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 		if (!(xTurnRate == 0.f && yTurnRate == 0.f))
 		{
 			FVector InputVector(-xTurnRate, yTurnRate, 0.f);
-			FVector NewVector = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
+			RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
 			
-			PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), NewVector.Rotation(), 20.f * DeltaSeconds));
+			PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), 20.f * DeltaSeconds));
 
 			xTurnRate = GetControlRotation().Vector().X;
 			xTurnRate = GetControlRotation().Vector().Y;
@@ -260,12 +260,6 @@ void APlayerCharacter::MoveForward(float Value)
 
 				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 				AddMovementInput(Direction, Value);
-
-				/*const FRotator Rotation = Controller->GetControlRotation();
-				const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-				AddMovementInput(Direction, Value);*/
 			}
 		}
 	}
@@ -284,12 +278,6 @@ void APlayerCharacter::MoveRight(float Value)
 
 				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 				AddMovementInput(Direction, Value);
-
-				/*const FRotator Rotation = Controller->GetControlRotation();
-				const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-				AddMovementInput(Direction, Value);*/
 			}
 		}
 	}
@@ -298,19 +286,13 @@ void APlayerCharacter::MoveRight(float Value)
 void APlayerCharacter::FaceUp(float Value)
 {
 	if (dead == false)
-	{
-		//if (Value != 0.f)
-			xTurnRate = Value;
-	}
+		xTurnRate = Value;
 }
 
 void APlayerCharacter::FaceRight(float Value)
 {
 	if (dead == false)
-	{
-		//if (Value != 0.f)
-			yTurnRate = Value;
-	}
+		yTurnRate = Value;
 }
 
 void APlayerCharacter::SwapRight()
@@ -465,4 +447,9 @@ void APlayerCharacter::Swap(class AEnemyCharacter* Enemy)
 		else
 			UE_LOG(LogTemp, Warning, TEXT("Tried To Swap To NULL Enemy!"));
 	}
+}
+
+float APlayerCharacter::GetRotationFromEnemy()
+{
+	return FMath::Atan2(FMath::Sin(RelativeInputRotation.Y), FMath::Cos(RelativeInputRotation.X));
 }
