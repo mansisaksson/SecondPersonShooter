@@ -43,6 +43,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
 	int32 score;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GetFunction)
+	int32 hp;
+
 	UFUNCTION()
 	void OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
@@ -104,7 +107,7 @@ protected:
 	float TVFadeMin;
 
 	bool dead;
-	int hp;
+
 	float shieldTime;
 
 	float xTurnRate;
