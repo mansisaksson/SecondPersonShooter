@@ -72,6 +72,9 @@ protected:
 	int32 hp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
+	USoundBase* StaticSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	USoundBase* FireSound;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* MuzzeFlash;
