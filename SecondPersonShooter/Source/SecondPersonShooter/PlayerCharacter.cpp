@@ -299,6 +299,9 @@ void APlayerCharacter::SwapRight()
 {
 	if (dead == false)
 	{
+		if (StaticSound != NULL)
+			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
+			
 		if (PossessedEnemy != NULL)
 			PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
 
@@ -315,6 +318,8 @@ void APlayerCharacter::SwapLeft()
 {
 	if (dead == false)
 	{
+		if (StaticSound != NULL)
+			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
 		if (PossessedEnemy != NULL)
 			PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
 
@@ -394,6 +399,8 @@ void APlayerCharacter::FireWeapon()
 				{
 					if (enemySurvived == false)
 					{
+						if (StaticSound != NULL)
+							UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
 						SwapRight();
 						TVFadedTime = 0;
 						TVFadeMin = 0.5;
@@ -411,6 +418,8 @@ void APlayerCharacter::FireWeapon()
 					}
 					else
 					{
+						if (StaticSound != NULL)
+							UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
 
 						TVFadedTime = 0;
 						TVFadeMin = 0.4;
