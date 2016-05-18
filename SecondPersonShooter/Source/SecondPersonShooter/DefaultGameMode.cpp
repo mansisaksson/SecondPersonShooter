@@ -77,13 +77,26 @@ APlayerCharacter* ADefaultGameMode::GetPlayerRef()
 
 AEnemyCharacter* ADefaultGameMode::GetClosestEnemy()
 {
+	AEnemyCharacter* ClosestEnemy = NULL;
+	if (Enemies.Num() > 0)
+	{
+		TNode* CurrentElement = Enemies.GetHead();
+		ClosestEnemy = CurrentElement->GetValue();
 
-	return NULL;
+		while (CurrentElement != NULL)
+		{
+			if (FVector::Dist(CurrentElement->GetValue()->GetActorLocation(), PlayerRef->GetActorLocation()) < FVector::Dist(ClosestEnemy->GetActorLocation(), PlayerRef->GetActorLocation()))
+				ClosestEnemy = Enemies.GetHead()->GetValue();
+
+			CurrentElement = CurrentElement->GetNextNode();
+		}
+	}
+	
+	return ClosestEnemy;
 }
 
 AEnemyCharacter* ADefaultGameMode::GetNextEnemy()
 {
-	
 	if (Enemies.Num() > 0)
 	{
 		if (EnemyNode == NULL)

@@ -32,6 +32,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	float GetRotationFromEnemy();
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	bool GetIsAlive() {	return !dead; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	bool GetIsFiring() { return bIsFiring; }
+
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
@@ -46,11 +52,16 @@ protected:
 
 	void SwapRight();
 	void SwapLeft();
+	void SelectClosestEnemy();
 	void Swap(class AEnemyCharacter* Enemy);
 
 	void StartFire();
 	void StopFire();
 	void FireWeapon();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnFire();
+	void OnFire_Implementation();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float BaseTurnRate;
@@ -80,6 +91,8 @@ protected:
 	UParticleSystem* MuzzeFlash;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* HitSparks;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
+	UParticleSystem* TrailParticle;
 
 	class AEnemyCharacter* PossessedEnemy;
 	class ADefaultGameMode* DefaultGameMode;

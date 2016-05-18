@@ -1,10 +1,13 @@
 #pragma once
 #include "GameFramework/GameMode.h"
 #include "DefaultGameMode.generated.h"
+
 UCLASS(minimalapi)
 class ADefaultGameMode : public AGameMode
 {
 	GENERATED_BODY()
+
+		typedef TDoubleLinkedList<class AEnemyCharacter*>::TDoubleLinkedListNode TNode;
 
 public:
 	ADefaultGameMode();

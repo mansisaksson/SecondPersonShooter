@@ -174,6 +174,7 @@ void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp,
 {
 	AEnemyCharacter *enemy = Cast<AEnemyCharacter>(OtherActor);
 	if (shieldTime <= 0)
+	{
 		if (enemy && dead == false)
 		{
 			//PossessedEnemy = enemy;
@@ -190,11 +191,11 @@ void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp,
 				FadeRed = true;
 				dead = true;
 
-				GetMesh()->SetSimulatePhysics(true);
+				/*GetMesh()->SetSimulatePhysics(true);
 				GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 				GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 				GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-				GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
+				GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);*/
 
 				GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 				GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -215,6 +216,7 @@ void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp,
 				FadeRed = true;
 			}
 		}
+	}
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
@@ -224,6 +226,8 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* InputCom
 
 	InputComponent->BindAction("SwapRight", IE_Released, this, &APlayerCharacter::SwapRight);
 	InputComponent->BindAction("SwapLeft", IE_Released, this, &APlayerCharacter::SwapLeft);
+	//InputComponent->BindAction("SelectClosestEnemy", IE_Released, this, &APlayerCharacter::SelectClosestEnemy);
+
 	InputComponent->BindAction("FireWeapon", IE_Pressed, this, &APlayerCharacter::StartFire);
 	InputComponent->BindAction("FireWeapon", IE_Released, this, &APlayerCharacter::StopFire);
 
@@ -332,6 +336,25 @@ void APlayerCharacter::SwapLeft()
 	}
 }
 
+void APlayerCharacter::SelectClosestEnemy()
+{
+	Debug::LogOnScreen("Swap");
+	if (dead == false)
+	{
+		if (StaticSound != NULL)
+			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
+		if (PossessedEnemy != NULL)
+			PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
+
+		AEnemyCharacter* TempEnemy = DefaultGameMode->GetClosestEnemy();
+		if (TempEnemy != NULL)
+		{
+			PossessedEnemy = TempEnemy;
+			Swap(PossessedEnemy);
+		}
+	}
+}
+
 void APlayerCharacter::StartFire()
 {
 	if (dead == false)
@@ -349,6 +372,8 @@ void APlayerCharacter::FireWeapon()
 {
 	if (dead == false)
 	{
+		OnFire();
+
 		if (FireSound != NULL)
 			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 
@@ -360,7 +385,7 @@ void APlayerCharacter::FireWeapon()
 			particleComp->SetRelativeTransform(particleTransform);
 		}
 
-		FVector TowardsLocation = BulletSpawnComp->GetComponentLocation() + (GetCapsuleComponent()->GetComponentRotation().Vector() * 5000.f);
+		FVector TowardsLocation = BulletSpawnComp->GetComponentLocation() + (GetCapsuleComponent()->GetComponentRotation().Vector() * 50000.f);
 
 		FHitResult result;
 		ECollisionChannel collisionChannel;
@@ -380,6 +405,12 @@ void APlayerCharacter::FireWeapon()
 			if (HitSparks != NULL)
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitSparks, result.Location, FRotator::ZeroRotator, true);
 
+			if (TrailParticle != NULL)
+			{
+				UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TrailParticle, BulletSpawnComp->GetComponentLocation(), FRotator::ZeroRotator, true);
+				ParticleComp->SetBeamEndPoint(0, result.Location);
+			}
+
 			AEnemyCharacter* HitTarget = Cast<AEnemyCharacter>(result.GetActor());
 
 			if (HitTarget)
@@ -387,13 +418,10 @@ void APlayerCharacter::FireWeapon()
 				bool enemySurvived = HitTarget->Hit(result, (TowardsLocation - BulletSpawnComp->GetComponentLocation()), 50.f);
 
 				if (enemySurvived == false && PossessedEnemy != HitTarget)
-				{
 					score += (HitTarget->scoreValue / (((HitTarget->GetActorLocation() - GetActorLocation()).Size() + 10) / 100));
-				}
+
 				else if (!enemySurvived)
-				{
 					score += (HitTarget->scoreValue / (((HitTarget->GetActorLocation() - GetActorLocation()).Size() + 10) / 100)) / 2.f;
-				}
 
 				if (PossessedEnemy == HitTarget)
 				{
@@ -414,7 +442,6 @@ void APlayerCharacter::FireWeapon()
 						TVFadeResetSpeed = y;
 						TVFadeResetDelay = z;
 						*/
-						
 					}
 					else
 					{
@@ -461,4 +488,9 @@ void APlayerCharacter::Swap(class AEnemyCharacter* Enemy)
 float APlayerCharacter::GetRotationFromEnemy()
 {
 	return FMath::Atan2(FMath::Sin(RelativeInputRotation.Y), FMath::Cos(RelativeInputRotation.X));
+}
+
+void APlayerCharacter::OnFire_Implementation()
+{
+
 }

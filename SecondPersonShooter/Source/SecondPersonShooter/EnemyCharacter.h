@@ -25,6 +25,8 @@ public:
 	int32 scoreValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float PossessedTurnRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float TurnRate;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)

@@ -11,6 +11,7 @@ AEnemyCharacter::AEnemyCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
+	PossessedTurnRate = 2.f;
 	TurnRate = 5.f;
 	Health = 100.f;
 	scoreValue = 500.f;
@@ -27,7 +28,7 @@ AEnemyCharacter::AEnemyCharacter()
 	GetCharacterMovement()->AirControl = 0.2f;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera2"));
-	Camera->AttachTo(RootComponent);
+	Camera->AttachTo(GetMesh());
 	Camera->bUsePawnControlRotation = false;
 }
 
@@ -66,7 +67,11 @@ void AEnemyCharacter::Tick(float DeltaTime)
 		{
 			NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
 
-			OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+			if (PlayerRef->GetPossessedEnemy() == this)
+				OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), PossessedTurnRate * DeltaTime);
+			else
+				OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+
 			FaceRotation(OldRotation);
 		}
 	}
