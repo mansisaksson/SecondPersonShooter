@@ -173,6 +173,18 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 		}
 		else TVFadeValue = 0;
 	}
+	else
+	{
+		if (PossessedEnemy == NULL)
+		{
+			for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+			{
+				AEnemyCharacter* enemy = Cast<AEnemyCharacter>(*ActorItr);
+				if (enemy != NULL && enemy->StartOnThis)
+					Swap(enemy);
+			}
+		}
+	}
 }
 
 void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

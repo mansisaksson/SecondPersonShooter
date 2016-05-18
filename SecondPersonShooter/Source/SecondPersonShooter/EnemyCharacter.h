@@ -29,6 +29,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float TurnRate;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	bool StartOnThis;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
 	bool GetIsAlive() { return isAlive; }
 
