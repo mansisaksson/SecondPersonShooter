@@ -22,7 +22,10 @@ public:
 	void RemoveEnemy(class AEnemyCharacter* enemy);
 	void AddEnemy(class AEnemyCharacter* enemy);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	bool IsGameplayRunning() { return GameplayRunning; }
+
+	UFUNCTION(BlueprintCallable, Category = GetFunction)
 	void StartGameplay() { GameplayRunning = true; }
 
 	//TArray<class AEnemyCharacter*> GetEnemies();

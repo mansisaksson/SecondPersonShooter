@@ -59,10 +59,10 @@ void AEnemyCharacter::Tick(float DeltaTime)
 {
 	bool gameRunning = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode())->IsGameplayRunning();
 
+	Super::Tick(DeltaTime);
+
 	if (gameRunning)
 	{
-		Super::Tick(DeltaTime);
-
 		if (isAlive)
 		{
 			if (PlayerRef == NULL)
