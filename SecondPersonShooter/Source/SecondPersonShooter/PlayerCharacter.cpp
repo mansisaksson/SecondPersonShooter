@@ -73,101 +73,106 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
-	Super::Tick(DeltaSeconds);
+	bool gameRunning = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode())->IsGameplayRunning();
 
-	TimeInEnemy += DeltaSeconds;
-	if (TimeInEnemy > 1.f)
+	if (gameRunning)
 	{
-		if (PossessedEnemy != NULL)
-			PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed += 0.15f;
-	}
+		Super::Tick(DeltaSeconds);
 
-	if (shieldTime > 0)
-		shieldTime -= DeltaSeconds;
-
-	if (PossessedEnemy == NULL)
-	{
-		if (PossessedEnemy != NULL)
-			PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
-
-		PossessedEnemy = DefaultGameMode->GetNextEnemy();
-		Swap(PossessedEnemy);
-	}
-
-	// Rotate Player Stuff
-	else
-	{
-		if (!(xTurnRate == 0.f && yTurnRate == 0.f))
+		TimeInEnemy += DeltaSeconds;
+		if (TimeInEnemy > 1.f)
 		{
-			FVector InputVector(-xTurnRate, yTurnRate, 0.f);
-			RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
-			
-			PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), 20.f * DeltaSeconds));
-
-			xTurnRate = GetControlRotation().Vector().X;
-			xTurnRate = GetControlRotation().Vector().Y;
+			if (PossessedEnemy != NULL)
+				PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed += 0.15f;
 		}
-	}
 
-	// Fire Weapon Stuff
-	TimeSinceFire += DeltaSeconds;
-	if (bIsFiring)
-	{
-		if (TimeSinceFire > 1.f / ShotsPerSecond)
-		{
-			TimeSinceFire = 0.f;
-			FireWeapon();
-		}
-	}
+		if (shieldTime > 0)
+			shieldTime -= DeltaSeconds;
 
-	// Fade Stuff
-	if (FadeTime > 0)
-	{
-		FadeDarkness = FMath::Lerp(FadeMin, FadeMax, FadedTime); // lerp(fademax, fademin, FadedTime)
-		FadedTime += DeltaSeconds/FadeTime;
-		if (FadedTime >= FadeTime)
+		if (PossessedEnemy == NULL)
 		{
-			FadeTime = 0;
-			FadeDarkness = FadeMax;
+			if (PossessedEnemy != NULL)
+				PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
+
+			PossessedEnemy = DefaultGameMode->GetNextEnemy();
+			Swap(PossessedEnemy);
 		}
-	}
-	else if (FadeDarkness > 0)
-	{
-		if (FadeResetSpeed > 0)
+
+		// Rotate Player Stuff
+		else
 		{
-			FadeResetDelay -= DeltaSeconds;
-			if (FadeResetDelay <= 0)
+			if (!(xTurnRate == 0.f && yTurnRate == 0.f))
 			{
-				FadeResetDelay = 0;
-				FadeDarkness -= FadeResetSpeed * DeltaSeconds;
+				FVector InputVector(-xTurnRate, yTurnRate, 0.f);
+				RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
+
+				PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), 20.f * DeltaSeconds));
+
+				xTurnRate = GetControlRotation().Vector().X;
+				xTurnRate = GetControlRotation().Vector().Y;
 			}
 		}
-	}
-	else FadeDarkness = 0;
 
-	if (TVFadeTime > 0)
-	{
-		TVFadeValue = FMath::Lerp(TVFadeMin, TVFadeMax, TVFadedTime); // lerp(fademax, fademin, FadedTime)
-		TVFadedTime += DeltaSeconds / TVFadeTime;
-		if (TVFadedTime >= TVFadeTime)
+		// Fire Weapon Stuff
+		TimeSinceFire += DeltaSeconds;
+		if (bIsFiring)
 		{
-			TVFadeTime = 0;
-			TVFadeValue = TVFadeMax;
-		}
-	}
-	else if (TVFadeValue > 0)
-	{
-		if (TVFadeResetSpeed > 0)
-		{
-			TVFadeResetDelay -= DeltaSeconds;
-			if (TVFadeResetDelay <= 0)
+			if (TimeSinceFire > 1.f / ShotsPerSecond)
 			{
-				TVFadeResetDelay = 0;
-				TVFadeValue -= TVFadeResetSpeed * DeltaSeconds;
+				TimeSinceFire = 0.f;
+				FireWeapon();
 			}
 		}
+
+		// Fade Stuff
+		if (FadeTime > 0)
+		{
+			FadeDarkness = FMath::Lerp(FadeMin, FadeMax, FadedTime); // lerp(fademax, fademin, FadedTime)
+			FadedTime += DeltaSeconds / FadeTime;
+			if (FadedTime >= FadeTime)
+			{
+				FadeTime = 0;
+				FadeDarkness = FadeMax;
+			}
+		}
+		else if (FadeDarkness > 0)
+		{
+			if (FadeResetSpeed > 0)
+			{
+				FadeResetDelay -= DeltaSeconds;
+				if (FadeResetDelay <= 0)
+				{
+					FadeResetDelay = 0;
+					FadeDarkness -= FadeResetSpeed * DeltaSeconds;
+				}
+			}
+		}
+		else FadeDarkness = 0;
+
+		if (TVFadeTime > 0)
+		{
+			TVFadeValue = FMath::Lerp(TVFadeMin, TVFadeMax, TVFadedTime); // lerp(fademax, fademin, FadedTime)
+			TVFadedTime += DeltaSeconds / TVFadeTime;
+			if (TVFadedTime >= TVFadeTime)
+			{
+				TVFadeTime = 0;
+				TVFadeValue = TVFadeMax;
+			}
+		}
+		else if (TVFadeValue > 0)
+		{
+			if (TVFadeResetSpeed > 0)
+			{
+				TVFadeResetDelay -= DeltaSeconds;
+				if (TVFadeResetDelay <= 0)
+				{
+					TVFadeResetDelay = 0;
+					TVFadeValue -= TVFadeResetSpeed * DeltaSeconds;
+				}
+			}
+		}
+		else TVFadeValue = 0;
 	}
-	else TVFadeValue = 0;
 }
 
 void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -357,6 +362,13 @@ void APlayerCharacter::SelectClosestEnemy()
 
 void APlayerCharacter::StartFire()
 {
+	ADefaultGameMode* gameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
+
+	if (!gameMode->IsGameplayRunning())
+	{
+		gameMode->StartGameplay();
+	}
+
 	if (dead == false)
 	{
 		bIsFiring = true;

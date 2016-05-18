@@ -57,22 +57,27 @@ void AEnemyCharacter::BeginPlay()
 
 void AEnemyCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+	bool gameRunning = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode())->IsGameplayRunning();
 
-	if (isAlive)
+	if (gameRunning)
 	{
-		if (PlayerRef == NULL)
-			PlayerRef = DefaultGameMode->GetPlayerRef();
-		else
+		Super::Tick(DeltaTime);
+
+		if (isAlive)
 		{
-			NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
-
-			if (PlayerRef->GetPossessedEnemy() == this)
-				OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), PossessedTurnRate * DeltaTime);
+			if (PlayerRef == NULL)
+				PlayerRef = DefaultGameMode->GetPlayerRef();
 			else
-				OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+			{
+				NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
 
-			FaceRotation(OldRotation);
+				if (PlayerRef->GetPossessedEnemy() == this)
+					OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), PossessedTurnRate * DeltaTime);
+				else
+					OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+
+				FaceRotation(OldRotation);
+			}
 		}
 	}
 }

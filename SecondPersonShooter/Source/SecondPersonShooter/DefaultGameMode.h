@@ -22,6 +22,9 @@ public:
 	void RemoveEnemy(class AEnemyCharacter* enemy);
 	void AddEnemy(class AEnemyCharacter* enemy);
 
+	bool IsGameplayRunning() { return GameplayRunning; }
+	void StartGameplay() { GameplayRunning = true; }
+
 	//TArray<class AEnemyCharacter*> GetEnemies();
 	int GetNumberOfEnemies();
 
@@ -40,6 +43,8 @@ private:
 	float TotalGameTime;
 	float badTimeTime;
 	float spawnTime;
+
+	bool GameplayRunning;
 };
 
 

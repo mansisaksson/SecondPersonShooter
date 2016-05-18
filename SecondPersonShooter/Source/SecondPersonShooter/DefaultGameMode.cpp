@@ -11,6 +11,8 @@ ADefaultGameMode::ADefaultGameMode()
 	EnemyNode = NULL;
 	badTimeTime = 10.f;
 	spawnTime = 3.f;
+
+	GameplayRunning = false;
 }
 
 void ADefaultGameMode::BeginPlay()
@@ -33,26 +35,31 @@ void ADefaultGameMode::BeginPlay()
 
 void ADefaultGameMode::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-	
-	TotalGameTime += DeltaTime;
-	if (TotalGameTime > badTimeTime)
+	bool gameRunning = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode())->IsGameplayRunning();
+
+	if (gameRunning)
 	{
-		TotalGameTime = 0.f;
-		if (badTimeTime < 8.f)
-			badTimeTime -= 3.f;
+		Super::Tick(DeltaTime);
 
-		for (size_t i = 0; i < Spawners.Num(); i++)
-			Spawners[i]->MaxEnemies++;
+		TotalGameTime += DeltaTime;
+		if (TotalGameTime > badTimeTime)
+		{
+			TotalGameTime = 0.f;
+			if (badTimeTime < 8.f)
+				badTimeTime -= 3.f;
 
-		spawnTime /= 1.5f;
-	}
+			for (size_t i = 0; i < Spawners.Num(); i++)
+				Spawners[i]->MaxEnemies++;
 
-	timeSinceLastSpawn += DeltaTime;
-	if (timeSinceLastSpawn > 1.f)
-	{
-		timeSinceLastSpawn = 0;
-		Spawners[rand() % Spawners.Num()]->CheckIfToSpawn();
+			spawnTime /= 1.5f;
+		}
+
+		timeSinceLastSpawn += DeltaTime;
+		if (timeSinceLastSpawn > 1.f)
+		{
+			timeSinceLastSpawn = 0;
+			Spawners[rand() % Spawners.Num()]->CheckIfToSpawn();
+		}
 	}
 }
 void ADefaultGameMode::AddEnemy(AEnemyCharacter* enemy)
