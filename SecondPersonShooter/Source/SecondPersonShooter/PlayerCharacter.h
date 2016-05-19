@@ -117,6 +117,7 @@ protected:
 	float TVFadeMin;
 
 	bool dead;
+	bool bHasSwappedOnce;
 
 	float shieldTime;
 

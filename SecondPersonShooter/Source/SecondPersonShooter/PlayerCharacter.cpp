@@ -15,6 +15,7 @@ APlayerCharacter::APlayerCharacter()
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
 	bIsFiring = false;
+	bHasSwappedOnce = false;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -69,6 +70,8 @@ void APlayerCharacter::BeginPlay()
 	DefaultGameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 	if (DefaultGameMode == NULL)
 		UE_LOG(LogTemp, Warning, TEXT("NO DEFAULT GAME MODE FOUND!"));
+
+	bHasSwappedOnce = false;
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -90,26 +93,8 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 
 		if (PossessedEnemy == NULL)
 		{
-			if (PossessedEnemy != NULL)
-				PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
-
 			PossessedEnemy = DefaultGameMode->GetNextEnemy();
 			Swap(PossessedEnemy);
-		}
-
-		// Rotate Player Stuff
-		else
-		{
-			if (!(xTurnRate == 0.f && yTurnRate == 0.f))
-			{
-				FVector InputVector(-xTurnRate, yTurnRate, 0.f);
-				RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
-
-				PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), 20.f * DeltaSeconds));
-
-				xTurnRate = GetControlRotation().Vector().X;
-				xTurnRate = GetControlRotation().Vector().Y;
-			}
 		}
 
 		// Fire Weapon Stuff
@@ -122,55 +107,6 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 				FireWeapon();
 			}
 		}
-
-		// Fade Stuff
-		if (FadeTime > 0)
-		{
-			FadeDarkness = FMath::Lerp(FadeMin, FadeMax, FadedTime); // lerp(fademax, fademin, FadedTime)
-			FadedTime += DeltaSeconds / FadeTime;
-			if (FadedTime >= FadeTime)
-			{
-				FadeTime = 0;
-				FadeDarkness = FadeMax;
-			}
-		}
-		else if (FadeDarkness > 0)
-		{
-			if (FadeResetSpeed > 0)
-			{
-				FadeResetDelay -= DeltaSeconds;
-				if (FadeResetDelay <= 0)
-				{
-					FadeResetDelay = 0;
-					FadeDarkness -= FadeResetSpeed * DeltaSeconds;
-				}
-			}
-		}
-		else FadeDarkness = 0;
-
-		if (TVFadeTime > 0)
-		{
-			TVFadeValue = FMath::Lerp(TVFadeMin, TVFadeMax, TVFadedTime); // lerp(fademax, fademin, FadedTime)
-			TVFadedTime += DeltaSeconds / TVFadeTime;
-			if (TVFadedTime >= TVFadeTime)
-			{
-				TVFadeTime = 0;
-				TVFadeValue = TVFadeMax;
-			}
-		}
-		else if (TVFadeValue > 0)
-		{
-			if (TVFadeResetSpeed > 0)
-			{
-				TVFadeResetDelay -= DeltaSeconds;
-				if (TVFadeResetDelay <= 0)
-				{
-					TVFadeResetDelay = 0;
-					TVFadeValue -= TVFadeResetSpeed * DeltaSeconds;
-				}
-			}
-		}
-		else TVFadeValue = 0;
 	}
 	else
 	{
@@ -180,10 +116,77 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 			{
 				AEnemyCharacter* enemy = Cast<AEnemyCharacter>(*ActorItr);
 				if (enemy != NULL && enemy->StartOnThis)
+				{
+					PossessedEnemy = enemy;
 					Swap(enemy);
+				}
 			}
 		}
 	}
+
+	// Rotate Player Stuff
+	if (bHasSwappedOnce)
+	{
+		if (!(xTurnRate == 0.f && yTurnRate == 0.f))
+		{
+			FVector InputVector(-xTurnRate, yTurnRate, 0.f);
+			RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
+
+			PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), 20.f * DeltaSeconds));
+
+			xTurnRate = GetControlRotation().Vector().X;
+			xTurnRate = GetControlRotation().Vector().Y;
+		}
+	}
+
+	// Fade Stuff
+	if (FadeTime > 0)
+	{
+		FadeDarkness = FMath::Lerp(FadeMin, FadeMax, FadedTime); // lerp(fademax, fademin, FadedTime)
+		FadedTime += DeltaSeconds / FadeTime;
+		if (FadedTime >= FadeTime)
+		{
+			FadeTime = 0;
+			FadeDarkness = FadeMax;
+		}
+	}
+	else if (FadeDarkness > 0)
+	{
+		if (FadeResetSpeed > 0)
+		{
+			FadeResetDelay -= DeltaSeconds;
+			if (FadeResetDelay <= 0)
+			{
+				FadeResetDelay = 0;
+				FadeDarkness -= FadeResetSpeed * DeltaSeconds;
+			}
+		}
+	}
+	else FadeDarkness = 0;
+
+	if (TVFadeTime > 0)
+	{
+		TVFadeValue = FMath::Lerp(TVFadeMin, TVFadeMax, TVFadedTime); // lerp(fademax, fademin, FadedTime)
+		TVFadedTime += DeltaSeconds / TVFadeTime;
+		if (TVFadedTime >= TVFadeTime)
+		{
+			TVFadeTime = 0;
+			TVFadeValue = TVFadeMax;
+		}
+	}
+	else if (TVFadeValue > 0)
+	{
+		if (TVFadeResetSpeed > 0)
+		{
+			TVFadeResetDelay -= DeltaSeconds;
+			if (TVFadeResetDelay <= 0)
+			{
+				TVFadeResetDelay = 0;
+				TVFadeValue -= TVFadeResetSpeed * DeltaSeconds;
+			}
+		}
+	}
+	else TVFadeValue = 0;
 }
 
 void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -269,7 +272,7 @@ void APlayerCharacter::ExitGame()
 
 void APlayerCharacter::MoveForward(float Value)
 {
-	if (dead == false)
+	if (dead == false && bHasSwappedOnce)
 	{
 		if ((Controller != NULL) && (Value != 0.0f))
 		{
@@ -287,7 +290,7 @@ void APlayerCharacter::MoveForward(float Value)
 
 void APlayerCharacter::MoveRight(float Value)
 {
-	if (dead == false)
+	if (dead == false && bHasSwappedOnce)
 	{
 		if ((Controller != NULL) && (Value != 0.0f))
 		{
@@ -328,8 +331,15 @@ void APlayerCharacter::SwapRight()
 		AEnemyCharacter* TempEnemy = DefaultGameMode->GetNextEnemy();
 		if (TempEnemy != NULL)
 		{
-			PossessedEnemy = TempEnemy;
-			Swap(PossessedEnemy);
+			if (PossessedEnemy == TempEnemy)
+				TempEnemy = DefaultGameMode->GetNextEnemy();
+
+			if (TempEnemy != NULL)
+			{
+				PossessedEnemy = TempEnemy;
+				Swap(PossessedEnemy);
+				bHasSwappedOnce = true;
+			}
 		}
 	}
 }
@@ -346,8 +356,15 @@ void APlayerCharacter::SwapLeft()
 		AEnemyCharacter* TempEnemy = DefaultGameMode->GetPrevEnemy();
 		if (TempEnemy != NULL)
 		{
-			PossessedEnemy = TempEnemy;
-			Swap(PossessedEnemy);
+			if (PossessedEnemy == TempEnemy)
+				TempEnemy = DefaultGameMode->GetPrevEnemy();
+
+			if (TempEnemy != NULL)
+			{
+				PossessedEnemy = TempEnemy;
+				Swap(PossessedEnemy);
+				bHasSwappedOnce = true;
+			}
 		}
 	}
 }
@@ -373,16 +390,15 @@ void APlayerCharacter::SelectClosestEnemy()
 
 void APlayerCharacter::StartFire()
 {
-	ADefaultGameMode* gameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
-
-	if (!gameMode->IsGameplayRunning())
+	if (bHasSwappedOnce)
 	{
-		gameMode->StartGameplay();
-	}
+		ADefaultGameMode* gameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 
-	if (dead == false)
-	{
-		bIsFiring = true;
+		if (!gameMode->IsGameplayRunning())
+			gameMode->StartGameplay();
+
+		if (dead == false)
+			bIsFiring = true;
 	}
 }
 
