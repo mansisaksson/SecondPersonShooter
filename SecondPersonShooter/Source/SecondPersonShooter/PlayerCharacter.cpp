@@ -73,12 +73,11 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
+	Super::Tick(DeltaSeconds);
 	bool gameRunning = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode())->IsGameplayRunning();
 
 	if (gameRunning)
 	{
-		Super::Tick(DeltaSeconds);
-
 		TimeInEnemy += DeltaSeconds;
 		if (TimeInEnemy > 1.f)
 		{
