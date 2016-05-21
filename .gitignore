@@ -64,39 +64,7 @@ SourceArt/**/*.tga
 *.exp
 */PCLaunch.rc.res
 
-// FMOD Files
-SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/UE4Editor-FMODStudio.pdb
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudio/FMODStudioPrivatePCH.h
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudioEditor/FMODStudioEditorPrivatePCH.h
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudioOculus/FMODStudioOculusPrivatePCH.h
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/UE4Editor-FMODStudio.exp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/UE4Editor-FMODStudioEditor.exp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/UE4Editor-FMODStudioOculus.exp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudio/PCH.FMODStudioPrivatePCH.h.cpp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudioEditor/PCH.FMODStudioEditorPrivatePCH.h.cpp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudioOculus/PCH.FMODStudioOculusPrivatePCH.h.cpp
-
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Inc/FMODStudioOculus/Timestamp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Inc/FMODStudioOculus/Timestamp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Inc/FMODStudioEditor/Timestamp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Inc/FMODStudio/Timestamp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudioOculus/PCLaunch.rc.res
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudioOculus/PCH.FMODStudioOculusPrivatePCH.h.cpp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudioEditor/PCLaunch.rc.res
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudioEditor/PCH.FMODStudioEditorPrivatePCH.h.cpp
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudio/PCLaunch.rc.res
-SecondPersonShooter/Plugins/FMODStudio/Intermediate/Build/Win64/UE4Editor/Development/FMODStudio/PCH.FMODStudioPrivatePCH.h.cpp
-
-*TimeStamp
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/fmod64.dll
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/fmod64_vc.lib
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/fmodL64.dll
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/fmodL64_vc.lib
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/fmodstudio64.dll
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/fmodstudio64_vc.lib
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/fmodstudioL64.dll
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/fmodstudioL64_vc.lib
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/ovrfmod.dll
-!SecondPersonShooter/Plugins/FMODStudio/Binaries/Win64/ovrfmod.lib
-
+SecondPersonShooter/Plugins/ScalabilityUIPlugin/Intermediate/*
+SecondPersonShooter/Plugins/ScalabilityUIPlugin/Binaries/Win64/UE4Editor-ScalabilityUIPlugin.pdb
+SecondPersonShooter/Plugins/ScalabilityUIPlugin/Binaries/Win64/UE4-ScalabilityUIPlugin-Win64-Shipping.lib
 
