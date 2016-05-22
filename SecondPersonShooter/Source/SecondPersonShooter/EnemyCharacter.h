@@ -28,7 +28,8 @@ public:
 	float PossessedTurnRate;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float TurnRate;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float SpeedUpRate;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	bool StartOnThis;
 

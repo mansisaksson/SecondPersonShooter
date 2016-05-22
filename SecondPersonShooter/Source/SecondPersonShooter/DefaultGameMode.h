@@ -34,6 +34,7 @@ public:
 private:
 	TArray<class AEnemySpawner*> Spawners;
 
+
 	TDoubleLinkedList<class AEnemyCharacter*> Enemies;
 	TDoubleLinkedList<class AEnemyCharacter*>::TDoubleLinkedListNode* EnemyNode;
 

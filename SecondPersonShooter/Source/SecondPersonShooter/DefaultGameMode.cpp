@@ -23,10 +23,7 @@ void ADefaultGameMode::BeginPlay()
 		AEnemySpawner* spawner = Cast<AEnemySpawner>(*ActorItr);
 		if (spawner != NULL)
 			Spawners.Add(spawner);
-	}
 
-	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-	{
 		APlayerCharacter* player = Cast<APlayerCharacter>(*ActorItr);
 		if (player != NULL)
 			PlayerRef = player;

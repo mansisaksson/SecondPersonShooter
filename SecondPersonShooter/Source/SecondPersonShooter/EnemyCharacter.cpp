@@ -15,6 +15,7 @@ AEnemyCharacter::AEnemyCharacter()
 	TurnRate = 5.f;
 	Health = 100.f;
 	scoreValue = 500.f;
+	SpeedUpRate = 5.f;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -65,6 +66,8 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	{
 		if (isAlive)
 		{
+			GetCharacterMovement()->MaxWalkSpeed += SpeedUpRate * DeltaTime;
+
 			if (PlayerRef == NULL)
 				PlayerRef = DefaultGameMode->GetPlayerRef();
 			else

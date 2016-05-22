@@ -26,15 +26,15 @@ public:
 
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return Camera; }
 
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void ClearPossessedEnemy() { PossessedEnemy = NULL; }
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class AEnemyCharacter* GetPossessedEnemy() { return PossessedEnemy; }
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	float GetRotationFromEnemy();
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
-	bool GetIsAlive() {	return !dead; }
-
+	bool GetIsAlive() {	return !bIsDead; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	bool GetIsFiring() { return bIsFiring; }
 
@@ -116,14 +116,12 @@ protected:
 	float TVFadeMax;
 	float TVFadeMin;
 
-	bool dead;
+	bool bIsDead;
 	bool bHasSwappedOnce;
 
 	float shieldTime;
 
 	float xTurnRate;
 	float yTurnRate;
-
-	float TimeInEnemy;
 };
 

@@ -79,65 +79,62 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	bool gameRunning = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode())->IsGameplayRunning();
 
-	if (gameRunning)
+	if (!bIsDead)
 	{
-		TimeInEnemy += DeltaSeconds;
-		if (TimeInEnemy > 1.f)
+		if (gameRunning)
 		{
-			if (PossessedEnemy != NULL)
-				PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed += 0.15f;
-		}
+			if (shieldTime > 0)
+				shieldTime -= DeltaSeconds;
 
-		if (shieldTime > 0)
-			shieldTime -= DeltaSeconds;
-
-		if (PossessedEnemy == NULL)
-		{
-			PossessedEnemy = DefaultGameMode->GetNextEnemy();
-			Swap(PossessedEnemy);
-		}
-
-		// Fire Weapon Stuff
-		TimeSinceFire += DeltaSeconds;
-		if (bIsFiring)
-		{
-			if (TimeSinceFire > 1.f / ShotsPerSecond)
+			if (PossessedEnemy == NULL)
 			{
-				TimeSinceFire = 0.f;
-				FireWeapon();
+				PossessedEnemy = DefaultGameMode->GetNextEnemy();
+				Swap(PossessedEnemy);
 			}
-		}
-	}
-	else
-	{
-		if (PossessedEnemy == NULL)
-		{
-			for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+
+			// Fire Weapon Stuff
+			TimeSinceFire += DeltaSeconds;
+			if (bIsFiring)
 			{
-				AEnemyCharacter* enemy = Cast<AEnemyCharacter>(*ActorItr);
-				if (enemy != NULL && enemy->StartOnThis)
+				if (TimeSinceFire > 1.f / ShotsPerSecond)
 				{
-					PossessedEnemy = enemy;
-					Swap(enemy);
+					TimeSinceFire = 0.f;
+					FireWeapon();
 				}
 			}
 		}
-	}
-
-	// Rotate Player Stuff
-	if (bHasSwappedOnce)
-	{
-		if (!(xTurnRate == 0.f && yTurnRate == 0.f))
+		else
 		{
-			FVector InputVector(-xTurnRate, yTurnRate, 0.f);
-			RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
+			if (PossessedEnemy == NULL)
+			{
+				for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+				{
+					AEnemyCharacter* enemy = Cast<AEnemyCharacter>(*ActorItr);
+					if (enemy != NULL && enemy->StartOnThis)
+					{
+						PossessedEnemy = enemy;
+						Swap(enemy);
+					}
+				}
+			}
+		}
 
-			PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), 20.f * DeltaSeconds));
+		// Rotate Player Stuff
+		if (bHasSwappedOnce)
+		{
+			if (!(xTurnRate == 0.f && yTurnRate == 0.f))
+			{
+				FVector InputVector(-xTurnRate, yTurnRate, 0.f);
+				RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
 
-			xTurnRate = GetControlRotation().Vector().X;
-			xTurnRate = GetControlRotation().Vector().Y;
+				PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), 20.f * DeltaSeconds));
+
+				xTurnRate = GetControlRotation().Vector().X;
+				xTurnRate = GetControlRotation().Vector().Y;
+			}
 		}
 	}
+	
 
 	// Fade Stuff
 	if (FadeTime > 0)
@@ -194,7 +191,7 @@ void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	AEnemyCharacter *enemy = Cast<AEnemyCharacter>(OtherActor);
 	if (shieldTime <= 0)
 	{
-		if (enemy && dead == false)
+		if (enemy && bIsDead == false)
 		{
 			//PossessedEnemy = enemy;
 			//PlayerController->SetViewTargetWithBlend(enemy);
@@ -208,7 +205,7 @@ void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp,
 				FadeMin = 0.2;
 				FadeResetSpeed = 0;
 				FadeRed = true;
-				dead = true;
+				bIsDead = true;
 
 				/*GetMesh()->SetSimulatePhysics(true);
 				GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
@@ -272,7 +269,7 @@ void APlayerCharacter::ExitGame()
 
 void APlayerCharacter::MoveForward(float Value)
 {
-	if (dead == false && bHasSwappedOnce)
+	if (bIsDead == false && bHasSwappedOnce)
 	{
 		if ((Controller != NULL) && (Value != 0.0f))
 		{
@@ -290,7 +287,7 @@ void APlayerCharacter::MoveForward(float Value)
 
 void APlayerCharacter::MoveRight(float Value)
 {
-	if (dead == false && bHasSwappedOnce)
+	if (bIsDead == false && bHasSwappedOnce)
 	{
 		if ((Controller != NULL) && (Value != 0.0f))
 		{
@@ -308,25 +305,22 @@ void APlayerCharacter::MoveRight(float Value)
 
 void APlayerCharacter::FaceUp(float Value)
 {
-	if (dead == false)
+	if (bIsDead == false)
 		xTurnRate = Value;
 }
 
 void APlayerCharacter::FaceRight(float Value)
 {
-	if (dead == false)
+	if (bIsDead == false)
 		yTurnRate = Value;
 }
 
 void APlayerCharacter::SwapRight()
 {
-	if (dead == false)
+	if (bIsDead == false)
 	{
 		if (StaticSound != NULL)
 			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
-			
-		if (PossessedEnemy != NULL)
-			PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
 
 		AEnemyCharacter* TempEnemy = DefaultGameMode->GetNextEnemy();
 		if (TempEnemy != NULL)
@@ -346,12 +340,10 @@ void APlayerCharacter::SwapRight()
 
 void APlayerCharacter::SwapLeft()
 {
-	if (dead == false)
+	if (bIsDead == false)
 	{
 		if (StaticSound != NULL)
 			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
-		if (PossessedEnemy != NULL)
-			PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
 
 		AEnemyCharacter* TempEnemy = DefaultGameMode->GetPrevEnemy();
 		if (TempEnemy != NULL)
@@ -372,12 +364,10 @@ void APlayerCharacter::SwapLeft()
 void APlayerCharacter::SelectClosestEnemy()
 {
 	Debug::LogOnScreen("Swap");
-	if (dead == false)
+	if (bIsDead == false)
 	{
 		if (StaticSound != NULL)
 			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
-		if (PossessedEnemy != NULL)
-			PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
 
 		AEnemyCharacter* TempEnemy = DefaultGameMode->GetClosestEnemy();
 		if (TempEnemy != NULL)
@@ -397,7 +387,7 @@ void APlayerCharacter::StartFire()
 		if (!gameMode->IsGameplayRunning())
 			gameMode->StartGameplay();
 
-		if (dead == false)
+		if (bIsDead == false)
 			bIsFiring = true;
 	}
 }
@@ -409,7 +399,7 @@ void APlayerCharacter::StopFire()
 
 void APlayerCharacter::FireWeapon()
 {
-	if (dead == false)
+	if (bIsDead == false)
 	{
 		OnFire();
 
@@ -502,12 +492,8 @@ void APlayerCharacter::FireWeapon()
 
 void APlayerCharacter::Swap(class AEnemyCharacter* Enemy)
 {
-	if (dead == false)
+	if (bIsDead == false)
 	{
-		TimeInEnemy = 0.f;
-		if (PossessedEnemy != NULL)
-			PossessedEnemy->GetCharacterMovement()->MaxWalkSpeed = PossessedEnemy->DefaultWalkSpeed;
-
 		if (Enemy != NULL)
 		{
 			TVFadedTime = 0;
