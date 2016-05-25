@@ -12,8 +12,7 @@ APlayerCharacter::APlayerCharacter()
 	xTurnRate = 0.f;
 	yTurnRate = 0.f;
 	ShotsPerSecond = 3.f;
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
+	TurnRate = 10.f;
 	bIsFiring = false;
 	bHasSwappedOnce = false;
 
@@ -122,15 +121,15 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 		// Rotate Player Stuff
 		if (bHasSwappedOnce)
 		{
-			if (!(xTurnRate == 0.f && yTurnRate == 0.f))
+			if ((xTurnRate * xTurnRate) + (yTurnRate * yTurnRate) > 0.5f)
 			{
 				FVector InputVector(-xTurnRate, yTurnRate, 0.f);
 				RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
 
-				PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), 20.f * DeltaSeconds));
+				PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), TurnRate * DeltaSeconds));
 
 				xTurnRate = GetControlRotation().Vector().X;
-				xTurnRate = GetControlRotation().Vector().Y;
+				yTurnRate = GetControlRotation().Vector().Y;
 			}
 		}
 	}
@@ -240,8 +239,8 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* InputCom
 	// Set up gameplay key bindings
 	check(InputComponent);
 
-	InputComponent->BindAction("SwapRight", IE_Released, this, &APlayerCharacter::SwapRight);
-	InputComponent->BindAction("SwapLeft", IE_Released, this, &APlayerCharacter::SwapLeft);
+	InputComponent->BindAction("SwapRight", IE_Released, this, &APlayerCharacter::SwapCloser);
+	InputComponent->BindAction("SwapLeft", IE_Released, this, &APlayerCharacter::SwapFurther);
 	//InputComponent->BindAction("SelectClosestEnemy", IE_Released, this, &APlayerCharacter::SelectClosestEnemy);
 
 	InputComponent->BindAction("FireWeapon", IE_Pressed, this, &APlayerCharacter::StartFire);
@@ -261,7 +260,6 @@ void APlayerCharacter::RestartGame()
 {
 	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
-
 void APlayerCharacter::ExitGame()
 {
 	GetWorld()->GetFirstPlayerController()->ConsoleCommand("quit");
@@ -284,7 +282,6 @@ void APlayerCharacter::MoveForward(float Value)
 		}
 	}
 }
-
 void APlayerCharacter::MoveRight(float Value)
 {
 	if (bIsDead == false && bHasSwappedOnce)
@@ -307,74 +304,104 @@ void APlayerCharacter::FaceUp(float Value)
 {
 	if (bIsDead == false)
 		xTurnRate = Value;
-}
 
+	//Debug::LogOnScreen(FString::Printf(TEXT("X: %f"),Value));
+}
 void APlayerCharacter::FaceRight(float Value)
 {
 	if (bIsDead == false)
 		yTurnRate = Value;
+
+	//Debug::LogOnScreen(FString::Printf(TEXT("Y: %f"), Value));
 }
 
-void APlayerCharacter::SwapRight()
+void APlayerCharacter::SwapCloser()
 {
 	if (bIsDead == false)
 	{
 		if (StaticSound != NULL)
 			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
 
-		AEnemyCharacter* TempEnemy = DefaultGameMode->GetNextEnemy();
+		AEnemyCharacter* TempEnemy = NULL;
+		if (PossessedEnemy != NULL)
+			TempEnemy = DefaultGameMode->GetCloserEnemy(PossessedEnemy);
+		else
+			TempEnemy = DefaultGameMode->GetNextEnemy();
+
 		if (TempEnemy != NULL)
 		{
-			if (PossessedEnemy == TempEnemy)
-				TempEnemy = DefaultGameMode->GetNextEnemy();
-
-			if (TempEnemy != NULL)
-			{
-				PossessedEnemy = TempEnemy;
-				Swap(PossessedEnemy);
-				bHasSwappedOnce = true;
-			}
+			PossessedEnemy = TempEnemy;
+			Swap(PossessedEnemy);
+			bHasSwappedOnce = true;
 		}
 	}
 }
-
-void APlayerCharacter::SwapLeft()
+void APlayerCharacter::SwapFurther()
 {
 	if (bIsDead == false)
 	{
 		if (StaticSound != NULL)
 			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
 
-		AEnemyCharacter* TempEnemy = DefaultGameMode->GetPrevEnemy();
+		AEnemyCharacter* TempEnemy = NULL;
+		if (PossessedEnemy != NULL)
+			TempEnemy = DefaultGameMode->GetFurtherEnemy(PossessedEnemy);
+		else
+			TempEnemy = DefaultGameMode->GetPrevEnemy();
+
 		if (TempEnemy != NULL)
 		{
-			if (PossessedEnemy == TempEnemy)
-				TempEnemy = DefaultGameMode->GetPrevEnemy();
-
-			if (TempEnemy != NULL)
-			{
-				PossessedEnemy = TempEnemy;
-				Swap(PossessedEnemy);
-				bHasSwappedOnce = true;
-			}
+			PossessedEnemy = TempEnemy;
+			Swap(PossessedEnemy);
+			bHasSwappedOnce = true;
 		}
 	}
 }
-
-void APlayerCharacter::SelectClosestEnemy()
+void APlayerCharacter::SwapToClosestEnemy()
 {
-	Debug::LogOnScreen("Swap");
 	if (bIsDead == false)
 	{
 		if (StaticSound != NULL)
 			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
 
-		AEnemyCharacter* TempEnemy = DefaultGameMode->GetClosestEnemy();
+		AEnemyCharacter* TempEnemy = DefaultGameMode->GetCloserEnemy(PossessedEnemy);
 		if (TempEnemy != NULL)
 		{
 			PossessedEnemy = TempEnemy;
 			Swap(PossessedEnemy);
 		}
+	}
+}
+void APlayerCharacter::SwapRandom()
+{
+	AEnemyCharacter* TempEnemy = NULL;
+	if (PossessedEnemy != NULL)
+		TempEnemy = DefaultGameMode->GetRandomEnemy();
+
+	if (TempEnemy != NULL)
+	{
+		PossessedEnemy = TempEnemy;
+		Swap(PossessedEnemy);
+		bHasSwappedOnce = true;
+	}
+}
+void APlayerCharacter::Swap(class AEnemyCharacter* Enemy)
+{
+	if (bIsDead == false)
+	{
+		if (Enemy != NULL)
+		{
+			TVFadedTime = 0;
+			TVFadeMax = 0.2;
+			TVFadeTime = 0.2;
+			TVFadeMin = 0.2;
+			TVFadeResetSpeed = 0.2;
+			TVFadeResetDelay = 0.2;
+			TVFadeValue = FMath::Lerp(TVFadeMin, TVFadeMax, TVFadedTime);
+			PlayerController->SetViewTargetWithBlend(Enemy);
+		}
+		else
+			UE_LOG(LogTemp, Warning, TEXT("Tried To Swap To NULL Enemy!"));
 	}
 }
 
@@ -391,12 +418,10 @@ void APlayerCharacter::StartFire()
 			bIsFiring = true;
 	}
 }
-
 void APlayerCharacter::StopFire()
 {
 	bIsFiring = false;
 }
-
 void APlayerCharacter::FireWeapon()
 {
 	if (bIsDead == false)
@@ -450,7 +475,7 @@ void APlayerCharacter::FireWeapon()
 					score += (HitTarget->scoreValue / (((HitTarget->GetActorLocation() - GetActorLocation()).Size() + 10) / 100));
 
 				else if (!enemySurvived)
-					score += (HitTarget->scoreValue / (((HitTarget->GetActorLocation() - GetActorLocation()).Size() + 10) / 100)) / 2.f;
+					score += 0.f;//(HitTarget->scoreValue / (((HitTarget->GetActorLocation() - GetActorLocation()).Size() + 10) / 100)) / 2.f;
 
 				if (PossessedEnemy == HitTarget)
 				{
@@ -458,7 +483,8 @@ void APlayerCharacter::FireWeapon()
 					{
 						if (StaticSound != NULL)
 							UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
-						SwapRight();
+
+						SwapRandom();
 						TVFadedTime = 0;
 						TVFadeMin = 0.5;
 						TVFadeMax = 0.5;
@@ -487,26 +513,6 @@ void APlayerCharacter::FireWeapon()
 				}
 			}
 		}
-	}
-}
-
-void APlayerCharacter::Swap(class AEnemyCharacter* Enemy)
-{
-	if (bIsDead == false)
-	{
-		if (Enemy != NULL)
-		{
-			TVFadedTime = 0;
-			TVFadeMax = 0.2;
-			TVFadeTime = 0.2;
-			TVFadeMin = 0.2;
-			TVFadeResetSpeed = 0.2;
-			TVFadeResetDelay = 0.2;
-			TVFadeValue = FMath::Lerp(TVFadeMin, TVFadeMax, TVFadedTime); 
-			PlayerController->SetViewTargetWithBlend(Enemy);
-		}
-		else
-			UE_LOG(LogTemp, Warning, TEXT("Tried To Swap To NULL Enemy!"));
 	}
 }
 

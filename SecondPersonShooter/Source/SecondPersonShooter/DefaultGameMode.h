@@ -17,6 +17,9 @@ public:
 
 	class APlayerCharacter* GetPlayerRef();
 	class AEnemyCharacter* GetClosestEnemy();
+	class AEnemyCharacter* GetCloserEnemy(class AEnemyCharacter* Enemy);
+	class AEnemyCharacter* GetFurtherEnemy(class AEnemyCharacter* Enemy);
+	class AEnemyCharacter* GetRandomEnemy();
 	class AEnemyCharacter* GetNextEnemy();
 	class AEnemyCharacter* GetPrevEnemy();
 	void RemoveEnemy(class AEnemyCharacter* enemy);
@@ -27,16 +30,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = GetFunction)
 	void StartGameplay() { GameplayRunning = true; }
-
-	//TArray<class AEnemyCharacter*> GetEnemies();
 	int GetNumberOfEnemies();
 
 private:
 	TArray<class AEnemySpawner*> Spawners;
 
-
-	TDoubleLinkedList<class AEnemyCharacter*> Enemies;
-	TDoubleLinkedList<class AEnemyCharacter*>::TDoubleLinkedListNode* EnemyNode;
+	TArray<class AEnemyCharacter*> Enemies;
 
 	class APlayerCharacter* PlayerRef;
 

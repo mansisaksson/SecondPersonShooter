@@ -7,8 +7,7 @@
 
 ADefaultGameMode::ADefaultGameMode()
 {
-	currentEnemyIndex = 0;
-	EnemyNode = NULL;
+	currentEnemyIndex = -1;
 	badTimeTime = 10.f;
 	spawnTime = 3.f;
 
@@ -61,16 +60,17 @@ void ADefaultGameMode::Tick(float DeltaTime)
 }
 void ADefaultGameMode::AddEnemy(AEnemyCharacter* enemy)
 {
-	Enemies.AddTail(enemy);
+	Enemies.Add(enemy);
 }
 
 void ADefaultGameMode::RemoveEnemy(AEnemyCharacter* enemy)
 {
-	if (EnemyNode != NULL && EnemyNode->GetValue() == enemy)
+	if (Enemies.Num() > 0 && currentEnemyIndex < Enemies.Num() && currentEnemyIndex != -1)
 	{
-		EnemyNode = NULL;
+		if (Enemies[currentEnemyIndex] == enemy)
+			currentEnemyIndex = -1;
 	}
-	Enemies.RemoveNode(enemy);
+	Enemies.Remove(enemy);
 }
 
 APlayerCharacter* ADefaultGameMode::GetPlayerRef()
@@ -78,69 +78,113 @@ APlayerCharacter* ADefaultGameMode::GetPlayerRef()
 	return PlayerRef;
 }
 
-
 AEnemyCharacter* ADefaultGameMode::GetClosestEnemy()
 {
 	AEnemyCharacter* ClosestEnemy = NULL;
 	if (Enemies.Num() > 0)
 	{
-		TNode* CurrentElement = Enemies.GetHead();
-		ClosestEnemy = CurrentElement->GetValue();
 
-		while (CurrentElement != NULL)
-		{
-			if (FVector::Dist(CurrentElement->GetValue()->GetActorLocation(), PlayerRef->GetActorLocation()) < FVector::Dist(ClosestEnemy->GetActorLocation(), PlayerRef->GetActorLocation()))
-				ClosestEnemy = Enemies.GetHead()->GetValue();
-
-			CurrentElement = CurrentElement->GetNextNode();
-		}
 	}
-	
+
 	return ClosestEnemy;
+}
+
+AEnemyCharacter* ADefaultGameMode::GetCloserEnemy(class AEnemyCharacter* Enemy)
+{
+	if (Enemy != NULL && PlayerRef != NULL)
+	{
+		AEnemyCharacter* ClosestCandidate = Enemy;
+		float ReferencePlayerDist = FVector::Dist(Enemy->GetActorLocation(), PlayerRef->GetActorLocation());
+		float DistToClosestCandidate = 0xfffffffff;
+
+		for (int i = 0; i < Enemies.Num(); i++)
+		{
+			if (Enemies[i] != Enemy)
+			{
+				float PlayerDist = FVector::Dist(Enemies[i]->GetActorLocation(), PlayerRef->GetActorLocation());
+				float DistToEnemy = FVector::Dist(Enemies[i]->GetActorLocation(), Enemy->GetActorLocation());
+
+				if (PlayerDist < ReferencePlayerDist && DistToEnemy < DistToClosestCandidate)
+				{
+					DistToClosestCandidate = DistToEnemy;
+					ClosestCandidate = Enemies[i];
+				}
+			}
+		}
+
+		currentEnemyIndex = Enemies.Find(ClosestCandidate, currentEnemyIndex);
+		return ClosestCandidate;
+	}
+	return NULL;
+}
+AEnemyCharacter* ADefaultGameMode::GetFurtherEnemy(class AEnemyCharacter* Enemy)
+{
+	if (Enemy != NULL && PlayerRef != NULL)
+	{
+		AEnemyCharacter* ClosestCandidate = Enemy;
+		float ReferencePlayerDist = FVector::Dist(Enemy->GetActorLocation(), PlayerRef->GetActorLocation());
+		float DistToClosestCandidate = 0xfffffffff;// ReferencePlayerDist * 99999.f;
+
+		for (int i = 0; i < Enemies.Num(); i++)
+		{
+			if (Enemies[i] != Enemy)
+			{
+				float PlayerDist = FVector::Dist(Enemies[i]->GetActorLocation(), PlayerRef->GetActorLocation());
+				float DistToEnemy = FVector::Dist(Enemies[i]->GetActorLocation(), Enemy->GetActorLocation());
+
+				if (PlayerDist > ReferencePlayerDist && DistToEnemy < DistToClosestCandidate)
+				{
+					DistToClosestCandidate = DistToEnemy;
+					ClosestCandidate = Enemies[i];
+				}
+			}
+		}
+
+		currentEnemyIndex = Enemies.Find(ClosestCandidate, currentEnemyIndex);
+		return ClosestCandidate;
+	}
+	return NULL;
 }
 
 AEnemyCharacter* ADefaultGameMode::GetNextEnemy()
 {
 	if (Enemies.Num() > 0)
 	{
-		if (EnemyNode == NULL)
-		{
-			EnemyNode = Enemies.GetHead();
-			return EnemyNode->GetValue();
-		}
-		else if (EnemyNode != Enemies.GetTail())
-		{
-			EnemyNode = EnemyNode->GetNextNode();
-		}
+		if (currentEnemyIndex == -1)
+			currentEnemyIndex = 0;
+
+		else if (currentEnemyIndex < Enemies.Num()-1)
+			currentEnemyIndex++;
+
 		else
-		{
-			EnemyNode = Enemies.GetHead();
-		}
-		return EnemyNode->GetValue();
+			currentEnemyIndex = 0;
+
+		return Enemies[currentEnemyIndex];
 	}
 
 	return NULL;
 }
-
 AEnemyCharacter* ADefaultGameMode::GetPrevEnemy()
 {
 	if (Enemies.Num() > 0)
 	{
-		if (EnemyNode == NULL)
-		{
-			EnemyNode = Enemies.GetTail();
-			return EnemyNode->GetValue();
-		}
-		else if (EnemyNode != Enemies.GetHead())
-		{
-			EnemyNode = EnemyNode->GetPrevNode();
-		}
+		if (currentEnemyIndex == -1)
+			currentEnemyIndex = 0;
+
+		else if (currentEnemyIndex > 0)
+			currentEnemyIndex--;
+
 		else
-		{
-			EnemyNode = Enemies.GetTail();
-		}
-		return EnemyNode->GetValue();
+			currentEnemyIndex = Enemies.Num()-1;
+
+		return Enemies[currentEnemyIndex];
 	}
+	return NULL;
+}
+AEnemyCharacter* ADefaultGameMode::GetRandomEnemy()
+{
+	if (Enemies.Num() > 0)
+		return Enemies[FMath::RandRange(0, Enemies.Num() - 1)];
 	return NULL;
 }
 

@@ -50,9 +50,10 @@ protected:
 	void FaceUp(float Value);
 	void FaceRight(float Value);
 
-	void SwapRight();
-	void SwapLeft();
-	void SelectClosestEnemy();
+	void SwapCloser();
+	void SwapFurther();
+	void SwapToClosestEnemy();
+	void SwapRandom();
 	void Swap(class AEnemyCharacter* Enemy);
 
 	void StartFire();
@@ -64,9 +65,7 @@ protected:
 	void OnFire_Implementation();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float BaseTurnRate;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	float BaseLookUpRate;
+	float TurnRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float FadeDarkness;
