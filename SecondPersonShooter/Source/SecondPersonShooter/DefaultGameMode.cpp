@@ -12,11 +12,23 @@ ADefaultGameMode::ADefaultGameMode()
 	spawnTime = 3.f;
 
 	GameplayRunning = false;
+	CurrentGameMode = EGameMode::MenuMode;
 }
 
 void ADefaultGameMode::BeginPlay()
 {
-	//Enemies.Empty();
+	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+	{
+		APlayerCharacter* player = Cast<APlayerCharacter>(*ActorItr);
+		if (player != NULL)
+			PlayerRef = player;
+	}
+}
+
+void ADefaultGameMode::StartHordeMode()
+{
+	CurrentGameMode = EGameMode::HordeMode;
+
 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
 		AEnemySpawner* spawner = Cast<AEnemySpawner>(*ActorItr);
@@ -31,12 +43,33 @@ void ADefaultGameMode::BeginPlay()
 
 void ADefaultGameMode::Tick(float DeltaTime)
 {
-	bool gameRunning = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode())->IsGameplayRunning();
+	Super::Tick(DeltaTime);
 
-	if (gameRunning)
+	switch (CurrentGameMode)
 	{
-		Super::Tick(DeltaTime);
+	case EGameMode::MenuMode:
+		UpdateMenuMode(DeltaTime);
+		break;
+	case EGameMode::HordeMode:
+		UpdateHordeMode(DeltaTime);
+		break;
+	case EGameMode::WaveMode:
+		UpdateWaveMode(DeltaTime);
+		break;
+	default:
+		break;
+	}
+	
+}
 
+void ADefaultGameMode::UpdateMenuMode(float DeltaTime)
+{
+
+}
+void ADefaultGameMode::UpdateHordeMode(float DeltaTime)
+{
+	if (IsGameplayRunning())
+	{
 		TotalGameTime += DeltaTime;
 		if (TotalGameTime > badTimeTime)
 		{
@@ -58,6 +91,11 @@ void ADefaultGameMode::Tick(float DeltaTime)
 		}
 	}
 }
+void ADefaultGameMode::UpdateWaveMode(float DeltaTime)
+{
+
+}
+
 void ADefaultGameMode::AddEnemy(AEnemyCharacter* enemy)
 {
 	Enemies.Add(enemy);
