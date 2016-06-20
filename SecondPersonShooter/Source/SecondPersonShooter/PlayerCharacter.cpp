@@ -411,7 +411,6 @@ void APlayerCharacter::StartFire()
 
 	if (bHasSwappedOnce && gameMode->IsGameLoaded())
 	{
-		Debug::LogOnScreen("y u do dis");
 		if (!gameMode->IsGameplayRunning())
 			gameMode->StartGameplay();
 
