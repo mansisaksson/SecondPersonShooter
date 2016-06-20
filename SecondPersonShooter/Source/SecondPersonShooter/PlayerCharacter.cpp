@@ -407,10 +407,11 @@ void APlayerCharacter::Swap(class AEnemyCharacter* Enemy)
 
 void APlayerCharacter::StartFire()
 {
-	if (bHasSwappedOnce)
-	{
-		ADefaultGameMode* gameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
+	ADefaultGameMode* gameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 
+	if (bHasSwappedOnce && gameMode->IsGameLoaded())
+	{
+		Debug::LogOnScreen("y u do dis");
 		if (!gameMode->IsGameplayRunning())
 			gameMode->StartGameplay();
 

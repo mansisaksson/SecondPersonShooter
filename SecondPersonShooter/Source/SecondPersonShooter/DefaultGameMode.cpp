@@ -12,6 +12,7 @@ ADefaultGameMode::ADefaultGameMode()
 	spawnTime = 3.f;
 
 	GameplayRunning = false;
+	GameLoaded = false;
 	CurrentGameMode = EGameMode::MenuMode;
 }
 
@@ -28,6 +29,8 @@ void ADefaultGameMode::BeginPlay()
 void ADefaultGameMode::StartHordeMode()
 {
 	CurrentGameMode = EGameMode::HordeMode;
+	SetIsLoaded(true);
+	Debug::LogOnScreen("Blaa");
 
 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
