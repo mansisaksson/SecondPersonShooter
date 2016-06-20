@@ -35,8 +35,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	bool IsGameplayRunning() { return GameplayRunning; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	bool IsGameLoaded() { return GameLoaded; }
 
-	UFUNCTION(BlueprintCallable, Category = GetFunction)
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void SetIsLoaded(bool isLoaded) { GameLoaded = isLoaded; }
+
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
 	void StartGameplay() { GameplayRunning = true; }
 
 	UFUNCTION(BlueprintCallable, Category = GetFunction)
@@ -44,7 +49,7 @@ public:
 
 	int GetNumberOfEnemies();
 
-private:
+protected:
 	void UpdateMenuMode(float DeltaTime);
 	void UpdateHordeMode(float DeltaTime);
 	void UpdateWaveMode(float DeltaTime);
@@ -63,6 +68,7 @@ private:
 	float spawnTime;
 
 	bool GameplayRunning;
+	bool GameLoaded;
 };
 
 
