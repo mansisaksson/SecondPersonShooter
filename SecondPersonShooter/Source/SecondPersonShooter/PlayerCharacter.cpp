@@ -119,7 +119,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 		}
 
 		// Rotate Player Stuff
-		if (bHasSwappedOnce)
+		if (bHasSwappedOnce && PossessedEnemy != NULL)
 		{
 			if ((xTurnRate * xTurnRate) + (yTurnRate * yTurnRate) > 0.5f)
 			{

@@ -9,15 +9,18 @@ ADefaultGameMode::ADefaultGameMode()
 {
 	currentEnemyIndex = -1;
 	badTimeTime = 10.f;
-	spawnTime = 3.f;
+	SpawnTime = 1.f;
 
 	GameplayRunning = false;
 	GameLoaded = false;
+	bForceStartWave = false;
 	CurrentGameMode = EGameMode::MenuMode;
 }
 
 void ADefaultGameMode::BeginPlay()
 {
+	CurrentGameMode = EGameMode::MenuMode;
+
 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
 		APlayerCharacter* player = Cast<APlayerCharacter>(*ActorItr);
@@ -30,7 +33,23 @@ void ADefaultGameMode::StartHordeMode()
 {
 	CurrentGameMode = EGameMode::HordeMode;
 	SetIsLoaded(true);
-	Debug::LogOnScreen("Blaa");
+
+	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+	{
+		AEnemySpawner* spawner = Cast<AEnemySpawner>(*ActorItr);
+		if (spawner != NULL)
+			Spawners.Add(spawner);
+
+		APlayerCharacter* player = Cast<APlayerCharacter>(*ActorItr);
+		if (player != NULL)
+			PlayerRef = player;
+	}
+}
+void ADefaultGameMode::StartWaveMode()
+{
+	CurrentGameMode = EGameMode::WaveMode;
+	SetIsLoaded(true);
+	bForceStartWave = true;
 
 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
@@ -82,21 +101,52 @@ void ADefaultGameMode::UpdateHordeMode(float DeltaTime)
 
 			for (size_t i = 0; i < Spawners.Num(); i++)
 				Spawners[i]->MaxEnemies++;
-
-			spawnTime /= 1.5f;
 		}
 
-		timeSinceLastSpawn += DeltaTime;
-		if (timeSinceLastSpawn > 1.f)
+		TimeSinceLastSpawn += DeltaTime;
+		if (TimeSinceLastSpawn > SpawnTime)
 		{
-			timeSinceLastSpawn = 0;
+			TimeSinceLastSpawn = 0;
 			Spawners[rand() % Spawners.Num()]->CheckIfToSpawn();
 		}
 	}
 }
 void ADefaultGameMode::UpdateWaveMode(float DeltaTime)
 {
+	if (IsGameplayRunning())
+	{
+		if ((EnemyWaves.Num() > 0 && EnemiesToSpawn.Num() == 0 && GetNumberOfEnemies() == 0) || bForceStartWave)
+		{
+			for (int32 i = 0; i < EnemyWaves[0].EnemyType1; i++)
+				EnemiesToSpawn.Add(EEnemyType::Type1);
+			for (int32 i = 0; i < EnemyWaves[0].EnemyType2; i++)
+				EnemiesToSpawn.Add(EEnemyType::Type2);
+			for (int32 i = 0; i < EnemyWaves[0].EnemyType3; i++)
+				EnemiesToSpawn.Add(EEnemyType::Type3);
 
+			SpawnTime = EnemyWaves[0].SpawnSpeed;
+			EnemyWaves.RemoveAt(0);
+			bForceStartWave = false;
+		}
+
+		if (EnemiesToSpawn.Num() > 0)
+		{
+			if (GetNumberOfEnemies() == 0)
+			{
+				int index = FMath::RandRange(0, EnemiesToSpawn.Num() - 1);
+				Spawners[rand() % Spawners.Num()]->SpawnEnemy(EnemiesToSpawn[index]);
+				EnemiesToSpawn.RemoveAt(index);
+			}
+			else if (TimeSinceLastSpawn > SpawnTime)
+			{
+				TimeSinceLastSpawn = 0.f;
+				int index = FMath::RandRange(0, EnemiesToSpawn.Num() - 1);
+				Spawners[rand() % Spawners.Num()]->SpawnEnemy(EnemiesToSpawn[index]);
+				EnemiesToSpawn.RemoveAt(index);
+			}
+			TimeSinceLastSpawn += DeltaTime;
+		}
+	}
 }
 
 void ADefaultGameMode::AddEnemy(AEnemyCharacter* enemy)
@@ -117,17 +167,6 @@ void ADefaultGameMode::RemoveEnemy(AEnemyCharacter* enemy)
 APlayerCharacter* ADefaultGameMode::GetPlayerRef()
 {
 	return PlayerRef;
-}
-
-AEnemyCharacter* ADefaultGameMode::GetClosestEnemy()
-{
-	AEnemyCharacter* ClosestEnemy = NULL;
-	if (Enemies.Num() > 0)
-	{
-
-	}
-
-	return ClosestEnemy;
 }
 
 AEnemyCharacter* ADefaultGameMode::GetCloserEnemy(class AEnemyCharacter* Enemy)
@@ -233,4 +272,3 @@ int ADefaultGameMode::GetNumberOfEnemies()
 {
 	return Enemies.Num();
 }
-

@@ -1,10 +1,9 @@
-// Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
-
 #ifndef __SECONDPERSONSHOOTER_H__
 #define __SECONDPERSONSHOOTER_H__
 
 #include "EngineMinimal.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "DefaultGameMode.h"
 #include "Engine.h"
 
 //General Log
@@ -20,6 +19,12 @@ DECLARE_LOG_CATEGORY_EXTERN(DebugAI, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(DebugError, Log, All);
 
 //Use Example: UE_LOG(DebugLog, Log, TEXT("Can Now Fire"));
+
+static class SPS
+{
+public:
+	static class ADefaultGameMode* GetGameMode(UObject* WorldContextObject);
+};
 
 static class Debug
 {

@@ -70,6 +70,7 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 			if (PlayerRef == NULL)
 				PlayerRef = DefaultGameMode->GetPlayerRef();
+
 			else
 			{
 				NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
@@ -91,6 +92,13 @@ bool AEnemyCharacter::Hit(FHitResult HitResult, FVector FromAnge, float Damage)
 
 	if (Health <= 0)
 	{
+		if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode)
+		{
+			if (SPS::GetGameMode(this)->GetEnemiesToSpawnInWave() == 0 && SPS::GetGameMode(this)->GetNumberOfEnemies() == 1)
+			{
+				Debug::LogOnScreen("I AM THE ONE AND ONLY!");
+			}
+		}
 		isAlive = false;
 
 		GetMesh()->SetSimulatePhysics(true);
