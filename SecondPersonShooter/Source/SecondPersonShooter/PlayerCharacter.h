@@ -23,12 +23,14 @@ public:
 
 	UFUNCTION()
 	void OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return Camera; }
+	UFUNCTION()
+	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
 
 	UFUNCTION(BlueprintCallable, Category = SetFunction)
 	void ClearPossessedEnemy() { PossessedEnemy = NULL; }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	class UCameraComponent* GetFollowCamera() const { return Camera; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class AEnemyCharacter* GetPossessedEnemy() { return PossessedEnemy; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
@@ -37,6 +39,10 @@ public:
 	bool GetIsAlive() {	return !bIsDead; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	bool GetIsFiring() { return bIsFiring; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	float GetHealth() { return Health; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	float GetMaxHealth() { return MaxHealth; }
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
@@ -79,7 +85,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	int32 score;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	int32 hp;
+	float Health;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float MaxHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	USoundBase* StaticSound;

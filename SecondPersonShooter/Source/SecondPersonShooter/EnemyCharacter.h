@@ -17,10 +17,17 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
-	bool Hit(FHitResult HitResult, FVector FromAnge, float Damage);
+	UFUNCTION()
+	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
 
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return Camera; }
-	
+	UFUNCTION()
+	void OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	class UCameraComponent* GetFollowCamera() const { return Camera; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	float GetHealth() { return Health; }
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	int32 scoreValue;
 

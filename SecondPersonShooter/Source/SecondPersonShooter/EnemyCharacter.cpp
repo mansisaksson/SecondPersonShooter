@@ -10,6 +10,7 @@ AEnemyCharacter::AEnemyCharacter()
 	isAlive = true;
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnHit);
 
 	PossessedTurnRate = 2.f;
 	TurnRate = 5.f;
@@ -86,9 +87,21 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	}
 }
 
-bool AEnemyCharacter::Hit(FHitResult HitResult, FVector FromAnge, float Damage)
+void AEnemyCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Health -= Damage;
+	if (APlayerCharacter *player = Cast<APlayerCharacter>(OtherActor))
+	{
+		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+		FDamageEvent DamageEvent(ValidDamageTypeClass);
+		player->TakeDamage(40.f, DamageEvent, GetController(), this);
+	}
+}
+
+float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	Health -= DamageAmount;
 
 	if (Health <= 0)
 	{
@@ -113,11 +126,12 @@ bool AEnemyCharacter::Hit(FHitResult HitResult, FVector FromAnge, float Damage)
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 		GetCapsuleComponent()->SetCollisionObjectType(ECC_WorldDynamic);
 
-		FromAnge.Normalize();
-		GetMesh()->AddImpulseAtLocation(FromAnge * 10000.0f, HitResult.Location);
+		FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
+		FromAngle.Normalize();
+		GetMesh()->AddImpulse(FromAngle * 10000.0f);
 
-		DefaultGameMode->RemoveEnemy(this);
+		SPS::GetGameMode(this)->RemoveEnemy(this);
 	}
-	
-	return isAlive;
+
+	return Health;
 }

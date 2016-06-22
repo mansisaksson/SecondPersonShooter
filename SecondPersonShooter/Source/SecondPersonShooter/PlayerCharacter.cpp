@@ -38,7 +38,6 @@ APlayerCharacter::APlayerCharacter()
 	BulletSpawnComp = CreateDefaultSubobject<USceneComponent>(TEXT("BulletSpawnLocation"));
 	BulletSpawnComp->AttachTo(GunMesh);
 
-	
 	FadeDarkness = 0;
 	FadeResetSpeed = 0;
 	FadeResetDelay = 0;
@@ -55,7 +54,8 @@ APlayerCharacter::APlayerCharacter()
 	TVFadeMax = 0;
 	TVFadeMin = 0;
 	TVFadedTime = 0;
-	hp = 2;
+	Health = 100.f;
+	MaxHealth = 100.f;
 	shieldTime = 0;
 }
 
@@ -187,51 +187,47 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 
 void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	AEnemyCharacter *enemy = Cast<AEnemyCharacter>(OtherActor);
-	if (shieldTime <= 0)
+	
+}
+
+float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	AEnemyCharacter* enemy = Cast<AEnemyCharacter>(DamageCauser);
+	if (shieldTime <= 0 && bIsDead == false)
 	{
-		if (enemy && bIsDead == false)
+		Health = FMath::Clamp(Health - DamageAmount, 0.f, MaxHealth);
+		shieldTime = 1.0f;
+
+		if (Health <= 0.f)
 		{
-			//PossessedEnemy = enemy;
-			//PlayerController->SetViewTargetWithBlend(enemy);
-			hp--;
-			shieldTime = 1.0f;
-			if (hp < 0)
-			{
-				FadeMax = 1;
-				FadedTime = 0;
-				FadeTime = 2.0;
-				FadeMin = 0.2;
-				FadeResetSpeed = 0;
-				FadeRed = true;
-				bIsDead = true;
+			FadeMax = 1;
+			FadedTime = 0;
+			FadeTime = 2.0;
+			FadeMin = 0.2;
+			FadeResetSpeed = 0;
+			FadeRed = true;
+			bIsDead = true;
 
-				/*GetMesh()->SetSimulatePhysics(true);
-				GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-				GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-				GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);*/
-
-				GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-				GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-				GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-				GetCapsuleComponent()->SetCollisionObjectType(ECC_WorldDynamic);
-			}
-			else
-			{
-				//PossessedEnemy = enemy;
-				//PlayerController->SetViewTargetWithBlend(enemy);
-
-				FadedTime = 0;
-				FadeMax = 0.7;
-				FadeTime = 0.3;
-				FadeMin = 0.0;
-				FadeResetSpeed = 0.3;
-				FadeResetDelay = 0.4;
-				FadeRed = true;
-			}
+			GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+			GetCapsuleComponent()->SetCollisionObjectType(ECC_WorldDynamic);
+		}
+		else
+		{
+			FadedTime = 0;
+			FadeMax = 0.7;
+			FadeTime = 0.3;
+			FadeMin = 0.0;
+			FadeResetSpeed = 0.3;
+			FadeResetDelay = 0.4;
+			FadeRed = true;
 		}
 	}
+
+	return Health;
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
@@ -465,21 +461,23 @@ void APlayerCharacter::FireWeapon()
 				ParticleComp->SetBeamEndPoint(0, result.Location);
 			}
 
-			AEnemyCharacter* HitTarget = Cast<AEnemyCharacter>(result.GetActor());
+			AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(result.GetActor());
 
-			if (HitTarget)
+			if (Enemy)
 			{
-				bool enemySurvived = HitTarget->Hit(result, (TowardsLocation - BulletSpawnComp->GetComponentLocation()), 50.f);
+				TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+				FDamageEvent DamageEvent(ValidDamageTypeClass);
+				float EnemyHealth = Enemy->TakeDamage(50.f, DamageEvent, GetController(), this);
 
-				if (enemySurvived == false && PossessedEnemy != HitTarget)
-					score += (HitTarget->scoreValue / (((HitTarget->GetActorLocation() - GetActorLocation()).Size() + 10) / 100));
+				if (EnemyHealth <= 0.f && PossessedEnemy != Enemy)
+					score += (Enemy->scoreValue / (((Enemy->GetActorLocation() - GetActorLocation()).Size() + 10) / 100));
 
-				else if (!enemySurvived)
+				else if (EnemyHealth <= 0.f)
 					score += 0.f;//(HitTarget->scoreValue / (((HitTarget->GetActorLocation() - GetActorLocation()).Size() + 10) / 100)) / 2.f;
 
-				if (PossessedEnemy == HitTarget)
+				if (PossessedEnemy == Enemy)
 				{
-					if (enemySurvived == false)
+					if (EnemyHealth <= 0.f)
 					{
 						if (StaticSound != NULL)
 							UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
