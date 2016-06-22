@@ -56,6 +56,8 @@ APlayerCharacter::APlayerCharacter()
 	TVFadedTime = 0;
 	Health = 100.f;
 	MaxHealth = 100.f;
+	Special = 100.f;
+	MaxSpecial = 100.f;
 	shieldTime = 0;
 }
 
@@ -405,6 +407,7 @@ void APlayerCharacter::StartFire()
 {
 	ADefaultGameMode* gameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 
+	Special -= 10.f;
 	if (bHasSwappedOnce && gameMode->IsGameLoaded())
 	{
 		if (!gameMode->IsGameplayRunning())

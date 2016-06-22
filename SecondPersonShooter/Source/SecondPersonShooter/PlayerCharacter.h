@@ -43,7 +43,10 @@ public:
 	float GetHealth() { return Health; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	float GetMaxHealth() { return MaxHealth; }
-
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	float GetSpecial() { return Special; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	float GetMaxSpecial() { return MaxSpecial; }
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
@@ -88,6 +91,10 @@ protected:
 	float Health;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float MaxHealth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float Special;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float MaxSpecial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	USoundBase* StaticSound;
