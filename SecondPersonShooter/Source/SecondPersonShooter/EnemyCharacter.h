@@ -23,33 +23,43 @@ public:
 	UFUNCTION()
 	void OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void DisableEnemy(float time, bool bBlockDamage = false, bool bKillOnFinish = false);
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void KillEnemy(FVector Impulse);
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void SetDefaultWalkSpeed(float Speed) { DefaultWalkSpeed = Speed; };
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class UCameraComponent* GetFollowCamera() const { return Camera; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	float GetHealth() { return Health; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
+	bool GetIsAlive() { return bIsAlive; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
+	int32 GetScoreValue() { return scoreValue; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	int32 scoreValue;
+	bool StartOnThis;
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	int32 scoreValue;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float Health;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float PossessedTurnRate;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float TurnRate;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float SpeedUpRate;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	bool StartOnThis;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
-	bool GetIsAlive() { return isAlive; }
+	
 
 	float DefaultWalkSpeed;
-protected:
+	float DisableTime;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	float Health;
-
-	bool isAlive;
+	bool bIsAlive;
+	bool bCanTakeDamage;
 
 	FRotator OldRotation;
 

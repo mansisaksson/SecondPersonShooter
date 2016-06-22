@@ -46,7 +46,7 @@ void AEnemySpawner::CheckIfToSpawn()
 
 			AEnemyCharacter* SpawnedEnemy = World->SpawnActor<AEnemyCharacter>(EnemyType1, SpawnLocation, SpawnRotation, SpawnParams);
 			SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed += (rand() % 100);
-			SpawnedEnemy->DefaultWalkSpeed = SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed;
+			SpawnedEnemy->SetDefaultWalkSpeed(SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed);
 		}
 	}
 }
@@ -89,6 +89,6 @@ void AEnemySpawner::SpawnEnemy(EEnemyType EnemyType)
 
 		AEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<AEnemyCharacter>(Enemy, SpawnLocation, SpawnRotation, SpawnParams);
 		SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed += (rand() % 100);
-		SpawnedEnemy->DefaultWalkSpeed = SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed;
+		SpawnedEnemy->SetDefaultWalkSpeed(SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed);
 	}
 }
