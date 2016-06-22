@@ -64,6 +64,8 @@ public:
 	EGameMode GetCurrentGameMode() { return CurrentGameMode; };
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	int32 GetEnemiesToSpawnInWave() { return EnemiesToSpawn.Num(); };
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	bool GetIsLastInWave() { return GetEnemiesToSpawnInWave() == 0 && GetNumberOfEnemies() == 1; };
 
 	UFUNCTION(BlueprintCallable, Category = SetFunction)
 	void SetIsLoaded(bool isLoaded) { GameLoaded = isLoaded; }

@@ -47,6 +47,7 @@ public:
 	float GetSpecial() { return Special; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	float GetMaxSpecial() { return MaxSpecial; }
+
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 

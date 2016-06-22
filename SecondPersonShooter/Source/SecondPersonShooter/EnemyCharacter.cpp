@@ -88,9 +88,10 @@ void AEnemyCharacter::Tick(float DeltaTime)
 			GetController()->StopMovement();
 			DisableTime -= DeltaTime;
 
-			if (DisableTime <= 0.f && !bIsAlive)
+			if (DisableTime <= 0.f)
 			{
-				KillEnemy(FVector::ZeroVector);
+				if (!bIsAlive)
+					KillEnemy(FVector::ZeroVector);
 				bCanTakeDamage = true;
 			}
 		}
@@ -117,8 +118,11 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 
 		if (Health <= 0)
 		{
-			if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetEnemiesToSpawnInWave() == 0 && SPS::GetGameMode(this)->GetNumberOfEnemies() == 1)
+			if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetIsLastInWave())
+			{
 				DisableEnemy(5.f, true, true);
+				SPS::GetGameMode(this)->RemoveEnemy(this);
+			}
 			else
 			{
 				FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
@@ -134,7 +138,7 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 void AEnemyCharacter::DisableEnemy(float time, bool bBlockDamage, bool bKillOnFinish)
 {
 	DisableTime = time;
-	bCanTakeDamage = bBlockDamage;
+	bCanTakeDamage = !bBlockDamage;
 	
 	if (bKillOnFinish)
 		bIsAlive = false;
