@@ -407,7 +407,6 @@ void APlayerCharacter::StartFire()
 {
 	ADefaultGameMode* gameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 
-	Special -= 10.f;
 	if (bHasSwappedOnce && gameMode->IsGameLoaded())
 	{
 		if (!gameMode->IsGameplayRunning())

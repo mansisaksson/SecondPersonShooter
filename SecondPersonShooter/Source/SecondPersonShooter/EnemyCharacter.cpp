@@ -119,10 +119,7 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 		if (Health <= 0)
 		{
 			if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetIsLastInWave())
-			{
 				DisableEnemy(5.f, true, true);
-				SPS::GetGameMode(this)->RemoveEnemy(this);
-			}
 			else
 			{
 				FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
