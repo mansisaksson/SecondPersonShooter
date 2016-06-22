@@ -7,23 +7,13 @@
 
 AEnemyCharacter::AEnemyCharacter()
 {
-	isAlive = true;
-	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnHit);
 
-	PossessedTurnRate = 2.f;
-	TurnRate = 5.f;
-	Health = 100.f;
-	scoreValue = 500.f;
-	SpeedUpRate = 5.f;
-
-	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
-	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
@@ -32,6 +22,16 @@ AEnemyCharacter::AEnemyCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera2"));
 	Camera->AttachTo(GetMesh());
 	Camera->bUsePawnControlRotation = false;
+
+	TurnRate = 5.f;
+	PossessedTurnRate = 2.f;
+	Health = 100.f;
+	scoreValue = 500.f;
+	SpeedUpRate = 5.f;
+	DisableTime = 0.f;
+
+	bIsAlive = true;
+	bCanTakeDamage = true;
 }
 
 void AEnemyCharacter::PostInitializeComponents()
@@ -65,13 +65,12 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 	if (gameRunning)
 	{
-		if (isAlive)
+		if (bIsAlive && DisableTime <= 0.f)
 		{
 			GetCharacterMovement()->MaxWalkSpeed += SpeedUpRate * DeltaTime;
 
 			if (PlayerRef == NULL)
 				PlayerRef = DefaultGameMode->GetPlayerRef();
-
 			else
 			{
 				NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
@@ -82,6 +81,17 @@ void AEnemyCharacter::Tick(float DeltaTime)
 					OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
 
 				FaceRotation(OldRotation);
+			}
+		}
+		else if (DisableTime > 0.f)
+		{
+			GetController()->StopMovement();
+			DisableTime -= DeltaTime;
+
+			if (DisableTime <= 0.f && !bIsAlive)
+			{
+				KillEnemy(FVector::ZeroVector);
+				bCanTakeDamage = true;
 			}
 		}
 	}
@@ -100,38 +110,53 @@ void AEnemyCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	Health -= DamageAmount;
-
-	if (Health <= 0)
+	
+	if (bCanTakeDamage)
 	{
-		if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode)
+		Health -= DamageAmount;
+
+		if (Health <= 0)
 		{
-			if (SPS::GetGameMode(this)->GetEnemiesToSpawnInWave() == 0 && SPS::GetGameMode(this)->GetNumberOfEnemies() == 1)
+			if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetEnemiesToSpawnInWave() == 0 && SPS::GetGameMode(this)->GetNumberOfEnemies() == 1)
+				DisableEnemy(5.f, true, true);
+			else
 			{
-				Debug::LogOnScreen("I AM THE ONE AND ONLY!");
+				FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
+				FromAngle.Normalize();
+				KillEnemy(FromAngle * 10000.f);
 			}
 		}
-		isAlive = false;
-
-		GetMesh()->SetSimulatePhysics(true);
-		GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-		GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
-
-		GetCapsuleComponent()->SetSimulatePhysics(false);
-		GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-		GetCapsuleComponent()->SetCollisionObjectType(ECC_WorldDynamic);
-
-		FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
-		FromAngle.Normalize();
-		GetMesh()->AddImpulse(FromAngle * 10000.0f);
-
-		SPS::GetGameMode(this)->RemoveEnemy(this);
 	}
 
 	return Health;
+}
+
+void AEnemyCharacter::DisableEnemy(float time, bool bBlockDamage, bool bKillOnFinish)
+{
+	DisableTime = time;
+	bCanTakeDamage = bBlockDamage;
+	
+	if (bKillOnFinish)
+		bIsAlive = false;
+}
+
+void AEnemyCharacter::KillEnemy(FVector Impulse)
+{
+	bIsAlive = false;
+
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
+
+	GetCapsuleComponent()->SetSimulatePhysics(false);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	GetCapsuleComponent()->SetCollisionObjectType(ECC_WorldDynamic);
+
+	GetMesh()->AddImpulse(Impulse);
+
+	SPS::GetGameMode(this)->RemoveEnemy(this);
 }

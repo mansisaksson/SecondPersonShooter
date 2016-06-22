@@ -473,7 +473,7 @@ void APlayerCharacter::FireWeapon()
 				float EnemyHealth = Enemy->TakeDamage(50.f, DamageEvent, GetController(), this);
 
 				if (EnemyHealth <= 0.f && PossessedEnemy != Enemy)
-					score += (Enemy->scoreValue / (((Enemy->GetActorLocation() - GetActorLocation()).Size() + 10) / 100));
+					score += (Enemy->GetScoreValue() / (((Enemy->GetActorLocation() - GetActorLocation()).Size() + 10) / 100));
 
 				else if (EnemyHealth <= 0.f)
 					score += 0.f;//(HitTarget->scoreValue / (((HitTarget->GetActorLocation() - GetActorLocation()).Size() + 10) / 100)) / 2.f;
