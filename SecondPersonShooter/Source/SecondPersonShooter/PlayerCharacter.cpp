@@ -470,50 +470,43 @@ void APlayerCharacter::FireWeapon()
 				TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
 				FDamageEvent DamageEvent(ValidDamageTypeClass);
 				float EnemyHealth = Enemy->TakeDamage(50.f, DamageEvent, GetController(), this);
-
-				if (EnemyHealth <= 0.f && PossessedEnemy != Enemy)
-					score += (Enemy->GetScoreValue() / (((Enemy->GetActorLocation() - GetActorLocation()).Size() + 10) / 100));
-
-				else if (EnemyHealth <= 0.f)
-					score += 0.f;//(HitTarget->scoreValue / (((HitTarget->GetActorLocation() - GetActorLocation()).Size() + 10) / 100)) / 2.f;
-
-				if (PossessedEnemy == Enemy)
-				{
-					if (EnemyHealth <= 0.f)
-					{
-						if (StaticSound != NULL)
-							UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
-
-						SwapRandom();
-						TVFadedTime = 0;
-						TVFadeMin = 0.5;
-						TVFadeMax = 0.5;
-						TVFadeTime = 0.2;
-						TVFadeResetSpeed = 0.4;
-						TVFadeResetDelay = 0.3;
-						/*
-						Borde funka att bara använda: (har inte testat)
-						TVFadeValue = x;
-						TVFadeResetSpeed = y;
-						TVFadeResetDelay = z;
-						*/
-					}
-					else
-					{
-						if (StaticSound != NULL)
-							UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
-
-						TVFadedTime = 0;
-						TVFadeMin = 0.4;
-						TVFadeMax = 0.4;
-						TVFadeTime = 0.1;						
-						TVFadeResetSpeed = 0.2;
-						TVFadeResetDelay = 0.0;
-					}
-				}
 			}
 		}
 	}
+}
+
+void APlayerCharacter::PossessedIsKilled()
+{
+	// StaticNoiseBig();
+	if (StaticSound != NULL)
+		UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
+
+	SwapRandom();
+	TVFadedTime = 0;
+	TVFadeMin = 0.5;
+	TVFadeMax = 0.5;
+	TVFadeTime = 0.2;
+	TVFadeResetSpeed = 0.4;
+	TVFadeResetDelay = 0.3;
+	/*
+	Borde funka att bara använda: (har inte testat)
+	TVFadeValue = x;
+	TVFadeResetSpeed = y;
+	TVFadeResetDelay = z;
+	*/
+}
+
+void APlayerCharacter::PossessedIsDamaged()
+{
+	if (StaticSound != NULL)
+		UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
+
+	TVFadedTime = 0;
+	TVFadeMin = 0.4;
+	TVFadeMax = 0.4;
+	TVFadeTime = 0.1;
+	TVFadeResetSpeed = 0.2;
+	TVFadeResetDelay = 0.0;
 }
 
 float APlayerCharacter::GetRotationFromEnemy()

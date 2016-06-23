@@ -47,7 +47,13 @@ public:
 	float GetSpecial() { return Special; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	float GetMaxSpecial() { return MaxSpecial; }
+	UFUNCTION(BlueprintCallable, Category = GetFunction)
+	void AddScore(float s) { score += s; }
 
+	UFUNCTION(BlueprintCallable, Category = GetFunction)
+	void PossessedIsKilled();
+	UFUNCTION(BlueprintCallable, Category = GetFunction)
+	void PossessedIsDamaged();
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 

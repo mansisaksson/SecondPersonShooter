@@ -118,6 +118,14 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 
 		if (Health <= 0)
 		{
+			if (PlayerRef->GetPossessedEnemy() == this)
+			{
+				PlayerRef->PossessedIsKilled();
+			}
+			else
+			{
+				PlayerRef->AddScore((GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100)));			
+			}
 			if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetIsLastInWave())
 				DisableEnemy(5.f, true, true);
 			else
@@ -125,6 +133,13 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 				FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
 				FromAngle.Normalize();
 				KillEnemy(FromAngle * 10000.f);
+			}
+		}
+		else
+		{
+			if (PlayerRef->GetPossessedEnemy() == this)
+			{
+				PlayerRef->PossessedIsDamaged();
 			}
 		}
 	}
