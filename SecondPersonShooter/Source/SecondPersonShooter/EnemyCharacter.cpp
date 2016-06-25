@@ -19,8 +19,11 @@ AEnemyCharacter::AEnemyCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
+	CameraPosition = CreateDefaultSubobject<USceneComponent>(TEXT("CameraPosition"));
+	CameraPosition->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera2"));
-	Camera->AttachTo(GetMesh());
+	Camera->AttachToComponent(CameraPosition, FAttachmentTransformRules::KeepRelativeTransform);
 	Camera->bUsePawnControlRotation = false;
 
 	TurnRate = 5.f;
@@ -76,9 +79,9 @@ void AEnemyCharacter::Tick(float DeltaTime)
 				NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
 
 				if (PlayerRef->GetPossessedEnemy() == this)
-					OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), PossessedTurnRate * DeltaTime);
+					OldRotation = FMath::RInterpTo(OldRotation, GetActorRotation(), DeltaTime, PossessedTurnRate);
 				else
-					OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+					OldRotation = FMath::RInterpTo(OldRotation, GetActorRotation(), DeltaTime, TurnRate);
 
 				FaceRotation(OldRotation);
 			}
@@ -98,7 +101,7 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	}
 }
 
-void AEnemyCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AEnemyCharacter::OnHit(UPrimitiveComponent* Comp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (APlayerCharacter *player = Cast<APlayerCharacter>(OtherActor))
 	{

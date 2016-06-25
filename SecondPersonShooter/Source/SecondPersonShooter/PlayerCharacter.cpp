@@ -22,21 +22,23 @@ APlayerCharacter::APlayerCharacter()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
+	//GetCapsuleComponent()->OnComponentHit.Add()
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->AttachParent = GetCapsuleComponent();
+	Camera->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 	Camera->bUsePawnControlRotation = false;
 
 	GunMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GunMesh"));
-	GunMesh->AttachTo(GetMesh(), TEXT("GunHand"), EAttachLocation::SnapToTarget);
+	GunMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("GunHand"));
 
 	BulletSpawnComp = CreateDefaultSubobject<USceneComponent>(TEXT("BulletSpawnLocation"));
-	BulletSpawnComp->AttachTo(GunMesh);
+	BulletSpawnComp->AttachToComponent(GunMesh, FAttachmentTransformRules::KeepRelativeTransform);
 
 	FadeDarkness = 0;
 	FadeResetSpeed = 0;
@@ -128,7 +130,8 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 				FVector InputVector(-xTurnRate, yTurnRate, 0.f);
 				RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
 
-				PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), TurnRate * DeltaSeconds));
+				
+				PlayerController->SetControlRotation(FMath::RInterpTo(GetActorRotation(), RelativeInputRotation.Rotation(), DeltaSeconds, TurnRate));
 
 				xTurnRate = GetControlRotation().Vector().X;
 				yTurnRate = GetControlRotation().Vector().Y;
@@ -187,15 +190,15 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 	else TVFadeValue = 0;
 }
 
-void APlayerCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void APlayerCharacter::OnHit(UPrimitiveComponent* Comp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	
+
 }
 
 float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
+	
 	AEnemyCharacter* enemy = Cast<AEnemyCharacter>(DamageCauser);
 	if (shieldTime <= 0 && bIsDead == false)
 	{

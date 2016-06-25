@@ -57,9 +57,9 @@ float SScalabilityUIPanel::GetResolutionScale() const
 	return (float)(CachedQualityLevels.ResolutionQuality - Scalability::MinResolutionScale) / (float)(Scalability::MaxResolutionScale - Scalability::MinResolutionScale);
 }
 
-FString SScalabilityUIPanel::GetResolutionScaleString() const
+FText SScalabilityUIPanel::GetResolutionScaleString() const
 {
-	return FString::Printf(TEXT("%1.1fx"), ((float)CachedQualityLevels.ResolutionQuality / Scalability::MaxResolutionScale));
+	return FText::FromString(FString::Printf(TEXT("%1.1fx"), ((float)CachedQualityLevels.ResolutionQuality / Scalability::MaxResolutionScale)));
 }
 
 TSharedRef<SWidget> SScalabilityUIPanel::MakeButtonWidget(const FText& InName, const TCHAR* InGroupName, int32 InQualityLevel, const FText& InToolTip)
