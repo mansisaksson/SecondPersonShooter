@@ -76,9 +76,9 @@ void AEnemyCharacter::Tick(float DeltaTime)
 				NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
 
 				if (PlayerRef->GetPossessedEnemy() == this)
-					OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), PossessedTurnRate * DeltaTime);
+					OldRotation = FMath::RInterpTo(OldRotation, GetActorRotation(), DeltaTime, PossessedTurnRate);
 				else
-					OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+					OldRotation = FMath::RInterpTo(OldRotation, GetActorRotation(), DeltaTime, TurnRate);
 
 				FaceRotation(OldRotation);
 			}
@@ -118,14 +118,6 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 
 		if (Health <= 0)
 		{
-			if (PlayerRef->GetPossessedEnemy() == this)
-			{
-				PlayerRef->PossessedIsKilled();
-			}
-			else
-			{
-				PlayerRef->AddScore((GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100)));			
-			}
 			if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetIsLastInWave())
 				DisableEnemy(5.f, true, true);
 			else
@@ -133,6 +125,11 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 				FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
 				FromAngle.Normalize();
 				KillEnemy(FromAngle * 10000.f);
+
+				if (PlayerRef->GetPossessedEnemy() == this)
+					PlayerRef->PossessedIsKilled();
+				else
+					PlayerRef->AddScore((GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100)));
 			}
 		}
 		else
