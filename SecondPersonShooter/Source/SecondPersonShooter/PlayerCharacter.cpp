@@ -14,7 +14,6 @@ APlayerCharacter::APlayerCharacter()
 	ShotsPerSecond = 3.f;
 	TurnRate = 10.f;
 	bIsFiring = false;
-	bHasSwappedOnce = false;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -71,8 +70,6 @@ void APlayerCharacter::BeginPlay()
 	DefaultGameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 	if (DefaultGameMode == NULL)
 		UE_LOG(LogTemp, Warning, TEXT("NO DEFAULT GAME MODE FOUND!"));
-
-	bHasSwappedOnce = false;
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -90,7 +87,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 			if (PossessedEnemy == NULL)
 			{
 				PossessedEnemy = DefaultGameMode->GetNextEnemy();
-				Swap(PossessedEnemy);
+				PossessEnemy(PossessedEnemy);
 			}
 
 			// Fire Weapon Stuff
@@ -114,21 +111,21 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 					if (enemy != NULL && enemy->StartOnThis)
 					{
 						PossessedEnemy = enemy;
-						Swap(enemy);
+						PossessEnemy(enemy);
 					}
 				}
 			}
 		}
 
 		// Rotate Player Stuff
-		if (bHasSwappedOnce && PossessedEnemy != NULL)
+		if (PossessedEnemy != NULL)
 		{
 			if ((xTurnRate * xTurnRate) + (yTurnRate * yTurnRate) > 0.5f)
 			{
 				FVector InputVector(-xTurnRate, yTurnRate, 0.f);
 				RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
 
-				PlayerController->SetControlRotation(FMath::Lerp(GetActorRotation(), RelativeInputRotation.Rotation(), TurnRate * DeltaSeconds));
+				PlayerController->SetControlRotation(FMath::RInterpTo(GetActorRotation(), RelativeInputRotation.Rotation(), DeltaSeconds, TurnRate));
 
 				xTurnRate = GetControlRotation().Vector().X;
 				yTurnRate = GetControlRotation().Vector().Y;
@@ -237,9 +234,8 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* InputCom
 	// Set up gameplay key bindings
 	check(InputComponent);
 
-	InputComponent->BindAction("SwapRight", IE_Released, this, &APlayerCharacter::SwapCloser);
-	InputComponent->BindAction("SwapLeft", IE_Released, this, &APlayerCharacter::SwapFurther);
-	//InputComponent->BindAction("SelectClosestEnemy", IE_Released, this, &APlayerCharacter::SelectClosestEnemy);
+	InputComponent->BindAction("SwapRight", IE_Released, this, &APlayerCharacter::SwapCloser_Input);
+	InputComponent->BindAction("SwapLeft", IE_Released, this, &APlayerCharacter::SwapFurther_Input);
 
 	InputComponent->BindAction("FireWeapon", IE_Pressed, this, &APlayerCharacter::StartFire);
 	InputComponent->BindAction("FireWeapon", IE_Released, this, &APlayerCharacter::StopFire);
@@ -265,7 +261,7 @@ void APlayerCharacter::ExitGame()
 
 void APlayerCharacter::MoveForward(float Value)
 {
-	if (bIsDead == false && bHasSwappedOnce)
+	if (bIsDead == false)
 	{
 		if ((Controller != NULL) && (Value != 0.0f))
 		{
@@ -282,7 +278,7 @@ void APlayerCharacter::MoveForward(float Value)
 }
 void APlayerCharacter::MoveRight(float Value)
 {
-	if (bIsDead == false && bHasSwappedOnce)
+	if (bIsDead == false)
 	{
 		if ((Controller != NULL) && (Value != 0.0f))
 		{
@@ -302,15 +298,27 @@ void APlayerCharacter::FaceUp(float Value)
 {
 	if (bIsDead == false)
 		xTurnRate = Value;
-
-	//Debug::LogOnScreen(FString::Printf(TEXT("X: %f"),Value));
 }
 void APlayerCharacter::FaceRight(float Value)
 {
 	if (bIsDead == false)
 		yTurnRate = Value;
+}
 
-	//Debug::LogOnScreen(FString::Printf(TEXT("Y: %f"), Value));
+void APlayerCharacter::SwapCloser_Input()
+{
+	if (SPS::GetGameMode(this)->IsGameplayRunning())
+		SwapCloser();
+}
+void APlayerCharacter::SwapFurther_Input()
+{
+	if (SPS::GetGameMode(this)->IsGameplayRunning())
+		SwapFurther();
+}
+void APlayerCharacter::SwapRandom_Input()
+{
+	if (SPS::GetGameMode(this)->IsGameplayRunning())
+		SwapRandom();
 }
 
 void APlayerCharacter::SwapCloser()
@@ -329,8 +337,7 @@ void APlayerCharacter::SwapCloser()
 		if (TempEnemy != NULL)
 		{
 			PossessedEnemy = TempEnemy;
-			Swap(PossessedEnemy);
-			bHasSwappedOnce = true;
+			PossessEnemy(PossessedEnemy);
 		}
 	}
 }
@@ -350,23 +357,7 @@ void APlayerCharacter::SwapFurther()
 		if (TempEnemy != NULL)
 		{
 			PossessedEnemy = TempEnemy;
-			Swap(PossessedEnemy);
-			bHasSwappedOnce = true;
-		}
-	}
-}
-void APlayerCharacter::SwapToClosestEnemy()
-{
-	if (bIsDead == false)
-	{
-		if (StaticSound != NULL)
-			UGameplayStatics::PlaySoundAtLocation(this, StaticSound, GetActorLocation());
-
-		AEnemyCharacter* TempEnemy = DefaultGameMode->GetCloserEnemy(PossessedEnemy);
-		if (TempEnemy != NULL)
-		{
-			PossessedEnemy = TempEnemy;
-			Swap(PossessedEnemy);
+			PossessEnemy(PossessedEnemy);
 		}
 	}
 }
@@ -379,11 +370,10 @@ void APlayerCharacter::SwapRandom()
 	if (TempEnemy != NULL)
 	{
 		PossessedEnemy = TempEnemy;
-		Swap(PossessedEnemy);
-		bHasSwappedOnce = true;
+		PossessEnemy(PossessedEnemy);
 	}
 }
-void APlayerCharacter::Swap(class AEnemyCharacter* Enemy)
+void APlayerCharacter::PossessEnemy(class AEnemyCharacter* Enemy)
 {
 	if (bIsDead == false)
 	{
@@ -407,7 +397,7 @@ void APlayerCharacter::StartFire()
 {
 	ADefaultGameMode* gameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 
-	if (bHasSwappedOnce && gameMode->IsGameLoaded())
+	if (gameMode->IsGameLoaded())
 	{
 		if (!gameMode->IsGameplayRunning())
 			gameMode->StartGameplay();
@@ -452,7 +442,7 @@ void APlayerCharacter::FireWeapon()
 
 		bool hitObject = GetWorld()->LineTraceSingleByChannel(result, BulletSpawnComp->GetComponentLocation(), TowardsLocation, collisionChannel, collisionQuery, collisionResponse);
 
-		if (hitObject)
+		if (hitObject && result.Actor != NULL)
 		{
 			if (HitSparks != NULL)
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitSparks, result.Location, FRotator::ZeroRotator, true);
@@ -463,14 +453,9 @@ void APlayerCharacter::FireWeapon()
 				ParticleComp->SetBeamEndPoint(0, result.Location);
 			}
 
-			AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(result.GetActor());
-
-			if (Enemy)
-			{
-				TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-				FDamageEvent DamageEvent(ValidDamageTypeClass);
-				float EnemyHealth = Enemy->TakeDamage(50.f, DamageEvent, GetController(), this);
-			}
+			TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+			FDamageEvent DamageEvent(ValidDamageTypeClass);
+			result.Actor->TakeDamage(50.f, DamageEvent, GetController(), this);
 		}
 	}
 }

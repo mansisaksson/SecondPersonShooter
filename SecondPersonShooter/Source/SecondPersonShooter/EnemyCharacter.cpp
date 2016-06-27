@@ -76,9 +76,9 @@ void AEnemyCharacter::Tick(float DeltaTime)
 				NavSystem->SimpleMoveToLocation(GetController(), PlayerRef->GetActorLocation());
 
 				if (PlayerRef->GetPossessedEnemy() == this)
-					OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), PossessedTurnRate * DeltaTime);
+					OldRotation = FMath::RInterpTo(OldRotation, GetActorRotation(), DeltaTime, PossessedTurnRate);
 				else
-					OldRotation = FMath::Lerp(OldRotation, GetActorRotation(), TurnRate * DeltaTime);
+					OldRotation = FMath::RInterpTo(OldRotation, GetActorRotation(), DeltaTime, TurnRate);
 
 				FaceRotation(OldRotation);
 			}
