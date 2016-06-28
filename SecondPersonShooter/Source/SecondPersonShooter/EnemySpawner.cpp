@@ -44,6 +44,12 @@ void AEnemySpawner::CheckIfToSpawn()
 			FVector SpawnLocation = RootComponent->GetComponentLocation();
 			FRotator SpawnRotation = { 0, 0, 0 };
 
+			if (GameMode->GetPlayerRef() != NULL)
+			{
+				SpawnRotation = (GameMode->GetPlayerRef()->GetActorLocation() - GetActorLocation()).Rotation();
+				SpawnRotation.Pitch = 0.f;
+			}
+
 			AEnemyCharacter* SpawnedEnemy = World->SpawnActor<AEnemyCharacter>(EnemyType1, SpawnLocation, SpawnRotation, SpawnParams);
 			SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed += (rand() % 100);
 			SpawnedEnemy->SetDefaultWalkSpeed(SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed);

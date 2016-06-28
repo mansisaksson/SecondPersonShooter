@@ -37,6 +37,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
 	bool GetIsAlive() { return bIsAlive; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
+	bool GetIsDisabled() { return DisableTime > 0.f; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
 	int32 GetScoreValue() { return scoreValue; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
@@ -60,6 +62,7 @@ protected:
 
 	bool bIsAlive;
 	bool bCanTakeDamage;
+	bool bKillOnFinish;
 
 	FRotator OldRotation;
 

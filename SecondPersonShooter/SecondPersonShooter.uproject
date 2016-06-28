@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{F8CF6A8D-4B1B-F6AC-0F8A-078FA0E36550}",
+	"EngineAssociation": "4.10",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -8,12 +8,6 @@
 			"Name": "SecondPersonShooter",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "FMODStudio",
-			"Enabled": true
 		}
 	]
 }

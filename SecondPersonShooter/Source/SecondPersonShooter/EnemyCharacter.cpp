@@ -90,9 +90,10 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 			if (DisableTime <= 0.f)
 			{
-				if (!bIsAlive)
+				if (!bIsAlive || bKillOnFinish)
 					KillEnemy(FVector::ZeroVector);
 				bCanTakeDamage = true;
+				bKillOnFinish = false;
 			}
 		}
 	}
@@ -149,8 +150,7 @@ void AEnemyCharacter::DisableEnemy(float time, bool bBlockDamage, bool bKillOnFi
 	DisableTime = time;
 	bCanTakeDamage = !bBlockDamage;
 	
-	if (bKillOnFinish)
-		bIsAlive = false;
+	this->bKillOnFinish = bKillOnFinish;
 }
 
 void AEnemyCharacter::KillEnemy(FVector Impulse)
