@@ -40,6 +40,8 @@ public:
 	bool GetIsDisabled() { return DisableTime > 0.f; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
 	int32 GetScoreValue() { return scoreValue; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
+	FRotator GetActualRotation() { return OldRotation; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	bool StartOnThis;
