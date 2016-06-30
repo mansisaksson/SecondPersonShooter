@@ -47,6 +47,9 @@ public:
 	bool StartOnThis;
 
 protected:
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnDeath"))
+	void OnDeath();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	int32 scoreValue;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)

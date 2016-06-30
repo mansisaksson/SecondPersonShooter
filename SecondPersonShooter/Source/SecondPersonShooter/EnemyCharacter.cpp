@@ -101,12 +101,12 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 void AEnemyCharacter::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (APlayerCharacter *player = Cast<APlayerCharacter>(OtherActor))
+	/*if (APlayerCharacter *player = Cast<APlayerCharacter>(OtherActor))
 	{
 		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
 		FDamageEvent DamageEvent(ValidDamageTypeClass);
 		player->TakeDamage(40.f, DamageEvent, GetController(), this);
-	}
+	}*/
 }
 
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
@@ -155,6 +155,9 @@ void AEnemyCharacter::DisableEnemy(float time, bool bBlockDamage, bool bKillOnFi
 
 void AEnemyCharacter::KillEnemy(FVector Impulse)
 {
+	if (bIsAlive)
+		OnDeath();
+
 	bIsAlive = false;
 
 	GetMesh()->SetSimulatePhysics(true);
