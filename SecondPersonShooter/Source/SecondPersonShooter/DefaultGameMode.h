@@ -110,7 +110,9 @@ protected:
 	float InitialSpawnRate;
 
 	float TotalGameTime;
+	float TotalBadTime;
 	float badTimeTime;
+	int MaxEnemies;
 
 
 	// Shared Variables

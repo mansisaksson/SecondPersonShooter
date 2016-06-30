@@ -10,6 +10,7 @@ ADefaultGameMode::ADefaultGameMode()
 	currentEnemyIndex = -1;
 	badTimeTime = 10.f;
 	SpawnTime = 1.f;
+	MaxEnemies = 5.f;
 
 	GameplayRunning = false;
 	GameLoaded = false;
@@ -93,21 +94,43 @@ void ADefaultGameMode::UpdateHordeMode(float DeltaTime)
 	if (IsGameplayRunning())
 	{
 		TotalGameTime += DeltaTime;
-		if (TotalGameTime > badTimeTime)
+		TotalBadTime += DeltaTime;
+		if (TotalBadTime > badTimeTime)
 		{
-			TotalGameTime = 0.f;
-			if (badTimeTime < 8.f)
-				badTimeTime -= 3.f;
-
-			for (size_t i = 0; i < Spawners.Num(); i++)
-				Spawners[i]->MaxEnemies++;
+			TotalBadTime = 0.f;
+			MaxEnemies++;
 		}
 
 		TimeSinceLastSpawn += DeltaTime;
 		if (TimeSinceLastSpawn > SpawnTime)
 		{
 			TimeSinceLastSpawn = 0;
-			Spawners[rand() % Spawners.Num()]->CheckIfToSpawn();
+
+			if (GetNumberOfEnemies() < MaxEnemies)
+			{
+				float difficultyV = FMath::FRand();
+
+				// super linear 50% at 2½ min, 100% at 5 min
+				float shieldTreshold = 1-TotalGameTime / 300;
+				if (shieldTreshold > 0.8)
+					shieldTreshold = 0.8;
+
+				//type3
+				/*if(difficultyV >= type3treshhold)
+				{
+					Spawners[rand() % Spawners.Num()]->SpawnEnemy(EEnemyType::Type3);
+				}*/
+				//shield
+				if (difficultyV >= shieldTreshold)
+				{
+					Spawners[rand() % Spawners.Num()]->SpawnEnemy(EEnemyType::Type2);
+				}
+				//default
+				else
+				{
+					Spawners[rand() % Spawners.Num()]->SpawnEnemy(EEnemyType::Type1);
+				}
+			}
 		}
 	}
 }

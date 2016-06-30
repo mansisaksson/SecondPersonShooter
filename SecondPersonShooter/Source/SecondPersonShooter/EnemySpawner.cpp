@@ -10,8 +10,6 @@ AEnemySpawner::AEnemySpawner()
 
 	SpawnMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpawnMesh"));
 	RootComponent = SpawnMesh;
-
-	MaxEnemies = 5;
 }
 
 void AEnemySpawner::BeginPlay()
@@ -29,7 +27,7 @@ void AEnemySpawner::Tick(float DeltaTime)
 
 void AEnemySpawner::CheckIfToSpawn()
 {
-	ADefaultGameMode* GameMode;
+	/*ADefaultGameMode* GameMode;
 	GameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 
 	if (EnemyType1 != NULL && GameMode->GetNumberOfEnemies() < MaxEnemies)
@@ -54,7 +52,7 @@ void AEnemySpawner::CheckIfToSpawn()
 			SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed += (rand() % 100);
 			SpawnedEnemy->SetDefaultWalkSpeed(SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed);
 		}
-	}
+	}*/
 }
 
 void AEnemySpawner::SpawnEnemy(EEnemyType EnemyType)
@@ -63,6 +61,7 @@ void AEnemySpawner::SpawnEnemy(EEnemyType EnemyType)
 
 	if (EnemyType1 != NULL && EnemyType2 != NULL && EnemyType3 != NULL)
 	{
+		Debug::LogOnScreen(TEXT("tried spawning enemy"));
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = Instigator;
