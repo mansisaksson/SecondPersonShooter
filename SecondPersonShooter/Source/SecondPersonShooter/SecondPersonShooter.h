@@ -3,7 +3,6 @@
 
 #include "EngineMinimal.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Kismet/KismetStringLibrary.h"
 #include "DefaultGameMode.h"
 #include "Engine.h"
 

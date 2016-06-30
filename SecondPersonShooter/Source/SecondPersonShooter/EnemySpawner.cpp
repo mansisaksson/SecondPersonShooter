@@ -61,7 +61,6 @@ void AEnemySpawner::SpawnEnemy(EEnemyType EnemyType)
 
 	if (EnemyType1 != NULL && EnemyType2 != NULL && EnemyType3 != NULL)
 	{
-		Debug::LogOnScreen(TEXT("tried spawning enemy"));
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = Instigator;

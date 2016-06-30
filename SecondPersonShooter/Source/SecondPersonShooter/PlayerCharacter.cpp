@@ -123,8 +123,6 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 			if ((xTurnRate * xTurnRate) + (yTurnRate * yTurnRate) > 0.5f)
 			{
 				
-				Debug::LogOnScreen(FString::Printf(TEXT("X: %f"), xTurnRate));
-				Debug::LogOnScreen(FString::Printf(TEXT("Y: %f"), yTurnRate));
 				//relative enemy direction
 				//FVector InputVector(-xTurnRate, yTurnRate, 0.f);
 				//RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
@@ -135,10 +133,9 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 				RelativeInputRotation = DirectionVec.Rotation().RotateVector(InputVector);
 				
 				//smooth
-				//PlayerController->SetControlRotation(FMath::RInterpTo(GetActorRotation(), RelativeInputRotation.Rotation(), DeltaSeconds, TurnRate));
+				PlayerController->SetControlRotation(FMath::RInterpTo(GetActorRotation(), RelativeInputRotation.Rotation(), DeltaSeconds, TurnRate));
 				//no smooth
-				Debug::LogOnScreen(UKismetStringLibrary::Conv_RotatorToString(RelativeInputRotation.Rotation()));
-				PlayerController->SetControlRotation(RelativeInputRotation.Rotation());
+				//PlayerController->SetControlRotation(RelativeInputRotation.Rotation());
 			}
 		}
 	}
