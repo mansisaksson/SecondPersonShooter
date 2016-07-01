@@ -1,0 +1,9 @@
+Unreal kraschade för mycket så kunde inte testa ordentligt.
+Är något annat än scoresaken som kraschar, kraschar även när de inte kördes alls. (kan vara scoresaken + något annat som kraschar)
+
+Klockan blev mycket så tar sovmorgon.
+
+Arrayerna funkar inte så bra verkar det som...... inget händer när jag försöker göra det som arrayer, så fick göra det som fula switchar för alla istället usch o fy
+
+
+get highscore index är inte implementerad i blueprint ännu, men den finns medskickad i c#, den är testad och funkar som den ska
