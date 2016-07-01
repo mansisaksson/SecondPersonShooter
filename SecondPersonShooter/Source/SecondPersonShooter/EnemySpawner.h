@@ -20,9 +20,6 @@ public:
 	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* SpawnMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	int32 MaxEnemies;
-
 protected:
 	UPROPERTY(EditAnywhere, Category = Gameplay)
 	TSubclassOf<class AEnemyCharacter> EnemyType1;

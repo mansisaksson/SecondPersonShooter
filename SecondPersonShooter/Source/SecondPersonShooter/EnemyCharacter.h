@@ -23,9 +23,6 @@ public:
 	UFUNCTION()
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
 
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* Comp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
 	UFUNCTION(BlueprintCallable, Category = SetFunction)
 	void DisableEnemy(float time, bool bBlockDamage = false, bool bKillOnFinish = false);
 	UFUNCTION(BlueprintCallable, Category = SetFunction)
@@ -40,12 +37,19 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
 	bool GetIsAlive() { return bIsAlive; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
+	bool GetIsDisabled() { return DisableTime > 0.f; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
 	int32 GetScoreValue() { return scoreValue; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)
+	FRotator GetActualRotation() { return OldRotation; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	bool StartOnThis;
 
 protected:
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnDeath"))
+	void OnDeath();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	int32 scoreValue;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
@@ -63,6 +67,7 @@ protected:
 
 	bool bIsAlive;
 	bool bCanTakeDamage;
+	bool bKillOnFinish;
 
 	FRotator OldRotation;
 

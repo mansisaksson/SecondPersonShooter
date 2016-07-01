@@ -22,12 +22,21 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* Comp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-	UFUNCTION()
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
 
 	UFUNCTION(BlueprintCallable, Category = SetFunction)
 	void ClearPossessedEnemy() { PossessedEnemy = NULL; }
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void AddScore(float s) { score += s; }
+
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void SwapCloser();
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void SwapFurther();
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void SwapRandom();
+	UFUNCTION(BlueprintCallable, Category = SetFunction)
+	void PossessEnemy(class AEnemyCharacter* Enemy);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class UCameraComponent* GetFollowCamera() const { return Camera; }
@@ -47,12 +56,10 @@ public:
 	float GetSpecial() { return Special; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	float GetMaxSpecial() { return MaxSpecial; }
-	UFUNCTION(BlueprintCallable, Category = GetFunction)
-	void AddScore(float s) { score += s; }
 
-	UFUNCTION(BlueprintCallable, Category = GetFunction)
+	UFUNCTION(BlueprintCallable, Category = CallFunction)
 	void PossessedIsKilled();
-	UFUNCTION(BlueprintCallable, Category = GetFunction)
+	UFUNCTION(BlueprintCallable, Category = CallFunction)
 	void PossessedIsDamaged();
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
@@ -65,13 +72,9 @@ protected:
 
 	void FaceUp(float Value);
 	void FaceRight(float Value);
-
-	void SwapCloser();
-	void SwapFurther();
-	void SwapToClosestEnemy();
-	void SwapRandom();
-	void Swap(class AEnemyCharacter* Enemy);
-
+	void SwapCloser_Input();
+	void SwapFurther_Input();
+	void SwapRandom_Input();
 	void StartFire();
 	void StopFire();
 	void FireWeapon();
@@ -138,7 +141,6 @@ protected:
 	float TVFadeMin;
 
 	bool bIsDead;
-	bool bHasSwappedOnce;
 
 	float shieldTime;
 

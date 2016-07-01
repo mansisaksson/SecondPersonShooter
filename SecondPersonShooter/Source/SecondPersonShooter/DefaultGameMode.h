@@ -45,13 +45,21 @@ public:
 	virtual void BeginPlay();
 	virtual void Tick(float DeltaTime);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class APlayerCharacter* GetPlayerRef();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class AEnemyCharacter* GetCloserEnemy(class AEnemyCharacter* Enemy);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class AEnemyCharacter* GetFurtherEnemy(class AEnemyCharacter* Enemy);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class AEnemyCharacter* GetRandomEnemy();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class AEnemyCharacter* GetNextEnemy();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class AEnemyCharacter* GetPrevEnemy();
+	UFUNCTION(BlueprintCallable, Category = GetFunction)
 	void RemoveEnemy(class AEnemyCharacter* enemy);
+	UFUNCTION(BlueprintCallable, Category = GetFunction)
 	void AddEnemy(class AEnemyCharacter* enemy);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
@@ -102,7 +110,9 @@ protected:
 	float InitialSpawnRate;
 
 	float TotalGameTime;
+	float TotalBadTime;
 	float badTimeTime;
+	int MaxEnemies;
 
 
 	// Shared Variables

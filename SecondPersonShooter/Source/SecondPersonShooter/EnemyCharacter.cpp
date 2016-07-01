@@ -8,7 +8,6 @@
 AEnemyCharacter::AEnemyCharacter()
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnHit);
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
@@ -93,21 +92,12 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 			if (DisableTime <= 0.f)
 			{
-				if (!bIsAlive)
+				if (!bIsAlive || bKillOnFinish)
 					KillEnemy(FVector::ZeroVector);
 				bCanTakeDamage = true;
+				bKillOnFinish = false;
 			}
 		}
-	}
-}
-
-void AEnemyCharacter::OnHit(UPrimitiveComponent* Comp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	if (APlayerCharacter *player = Cast<APlayerCharacter>(OtherActor))
-	{
-		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-		FDamageEvent DamageEvent(ValidDamageTypeClass);
-		player->TakeDamage(40.f, DamageEvent, GetController(), this);
 	}
 }
 
@@ -121,14 +111,6 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 
 		if (Health <= 0)
 		{
-			if (PlayerRef->GetPossessedEnemy() == this)
-			{
-				PlayerRef->PossessedIsKilled();
-			}
-			else
-			{
-				PlayerRef->AddScore((GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100)));			
-			}
 			if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetIsLastInWave())
 				DisableEnemy(5.f, true, true);
 			else
@@ -136,6 +118,11 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 				FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
 				FromAngle.Normalize();
 				KillEnemy(FromAngle * 10000.f);
+
+				if (PlayerRef->GetPossessedEnemy() == this)
+					PlayerRef->PossessedIsKilled();
+				else
+					PlayerRef->AddScore((GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100)));
 			}
 		}
 		else
@@ -155,12 +142,14 @@ void AEnemyCharacter::DisableEnemy(float time, bool bBlockDamage, bool bKillOnFi
 	DisableTime = time;
 	bCanTakeDamage = !bBlockDamage;
 	
-	if (bKillOnFinish)
-		bIsAlive = false;
+	this->bKillOnFinish = bKillOnFinish;
 }
 
 void AEnemyCharacter::KillEnemy(FVector Impulse)
 {
+	if (bIsAlive)
+		OnDeath();
+
 	bIsAlive = false;
 
 	GetMesh()->SetSimulatePhysics(true);

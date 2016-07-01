@@ -10,8 +10,6 @@ AEnemySpawner::AEnemySpawner()
 
 	SpawnMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpawnMesh"));
 	RootComponent = SpawnMesh;
-
-	MaxEnemies = 5;
 }
 
 void AEnemySpawner::BeginPlay()
@@ -29,7 +27,7 @@ void AEnemySpawner::Tick(float DeltaTime)
 
 void AEnemySpawner::CheckIfToSpawn()
 {
-	ADefaultGameMode* GameMode;
+	/*ADefaultGameMode* GameMode;
 	GameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 
 	if (EnemyType1 != NULL && GameMode->GetNumberOfEnemies() < MaxEnemies)
@@ -44,19 +42,25 @@ void AEnemySpawner::CheckIfToSpawn()
 			FVector SpawnLocation = RootComponent->GetComponentLocation();
 			FRotator SpawnRotation = { 0, 0, 0 };
 
+			if (GameMode->GetPlayerRef() != NULL)
+			{
+				SpawnRotation = (GameMode->GetPlayerRef()->GetActorLocation() - GetActorLocation()).Rotation();
+				SpawnRotation.Pitch = 0.f;
+			}
+
 			AEnemyCharacter* SpawnedEnemy = World->SpawnActor<AEnemyCharacter>(EnemyType1, SpawnLocation, SpawnRotation, SpawnParams);
 			SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed += (rand() % 100);
 			SpawnedEnemy->SetDefaultWalkSpeed(SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed);
 		}
-	}
+	}*/
 }
 
 void AEnemySpawner::SpawnEnemy(EEnemyType EnemyType)
 {
 	ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 
-	if (EnemyType1 != NULL && EnemyType2 != NULL && EnemyType3 != NULL)
-	{
+	//if (EnemyType1 != NULL && EnemyType2 != NULL && EnemyType3 != NULL)
+	//{
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = Instigator;
@@ -86,9 +90,11 @@ void AEnemySpawner::SpawnEnemy(EEnemyType EnemyType)
 		default:
 			break;
 		}
-
-		AEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<AEnemyCharacter>(Enemy, SpawnLocation, SpawnRotation, SpawnParams);
-		SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed += (rand() % 100);
-		SpawnedEnemy->SetDefaultWalkSpeed(SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed);
-	}
+		if (Enemy != NULL)
+		{
+			AEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<AEnemyCharacter>(Enemy, SpawnLocation, SpawnRotation, SpawnParams);
+			SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed += (rand() % 100);
+			SpawnedEnemy->SetDefaultWalkSpeed(SpawnedEnemy->GetCharacterMovement()->MaxWalkSpeed);
+		}
+	//}
 }
