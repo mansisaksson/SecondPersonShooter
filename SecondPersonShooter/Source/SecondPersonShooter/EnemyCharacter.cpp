@@ -29,9 +29,10 @@ AEnemyCharacter::AEnemyCharacter()
 	PossessedTurnRate = 2.f;
 	Health = 100.f;
 	scoreValue = 500.f;
-	SpeedUpRate = 5.f;
+	SpeedUpRate = 3.f;
 	DisableTime = 0.f;
-
+	scoreGivenOnDeath = 0;
+	
 	bIsAlive = true;
 	bCanTakeDamage = true;
 }
@@ -117,12 +118,19 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 			{
 				FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
 				FromAngle.Normalize();
+				
+				if (PlayerRef->GetPossessedEnemy() == this)
+				{
+					PlayerRef->PossessedIsKilled();
+				}
+				else
+				{
+					scoreGivenOnDeath = (GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100));
+					PlayerRef->AddScore(scoreGivenOnDeath);
+				}
+				
 				KillEnemy(FromAngle * 10000.f);
 
-				if (PlayerRef->GetPossessedEnemy() == this)
-					PlayerRef->PossessedIsKilled();
-				else
-					PlayerRef->AddScore((GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100)));
 			}
 		}
 		else
