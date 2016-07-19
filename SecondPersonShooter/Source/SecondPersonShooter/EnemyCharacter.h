@@ -53,6 +53,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	int32 scoreValue;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	int32 scoreGivenOnDeath;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float Health;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float PossessedTurnRate;

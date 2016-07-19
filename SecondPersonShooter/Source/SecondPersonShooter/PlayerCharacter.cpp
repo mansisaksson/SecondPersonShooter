@@ -456,7 +456,7 @@ void APlayerCharacter::FireWeapon()
 
 			TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
 			FDamageEvent DamageEvent(ValidDamageTypeClass);
-			result.Actor->TakeDamage(50.f, DamageEvent, GetController(), this);
+			result.Actor->TakeDamage(FMath::RandRange(40.f, 60.f), DamageEvent, GetController(), this);
 		}
 	}
 }
