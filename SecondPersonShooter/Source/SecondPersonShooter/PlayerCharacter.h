@@ -121,7 +121,6 @@ protected:
 	class AEnemyCharacter* PossessedEnemy;
 	class ADefaultGameMode* DefaultGameMode;
 	APlayerController* PlayerController;
-	FVector RelativeInputRotation;
 
 	bool bIsFiring;
 	float TimeSinceFire;
@@ -144,7 +143,10 @@ protected:
 
 	float shieldTime;
 
+	FVector RelativeInputRotation;
 	float xTurnRate;
 	float yTurnRate;
+	float xMoveDirection;
+	float yMoveDirection;
 };
 
