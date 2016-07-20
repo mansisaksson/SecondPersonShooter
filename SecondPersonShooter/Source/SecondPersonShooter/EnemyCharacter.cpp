@@ -106,42 +106,44 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	
-	if (bCanTakeDamage)
+	if (bIsAlive)
 	{
-		Health -= DamageAmount;
-
-		if (Health <= 0)
+		if (bCanTakeDamage)
 		{
-			if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetIsLastInWave())
-				DisableEnemy(5.f, true, true);
-			else
+			Health -= DamageAmount;
+
+			if (Health <= 0)
 			{
-				FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
-				FromAngle.Normalize();
-				
-				if (PlayerRef->GetPossessedEnemy() == this)
-				{
-					PlayerRef->PossessedIsKilled();
-				}
+				if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetIsLastInWave())
+					DisableEnemy(5.f, true, true);
 				else
 				{
-					scoreGivenOnDeath = (GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100));
-					PlayerRef->AddScore(scoreGivenOnDeath);
-				}
-				
-				KillEnemy(FromAngle * 10000.f);
+					FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
+					FromAngle.Normalize();
 
+					if (PlayerRef->GetPossessedEnemy() == this)
+					{
+						PlayerRef->PossessedIsKilled();
+					}
+					else
+					{
+						scoreGivenOnDeath = (GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100));
+						PlayerRef->AddScore(scoreGivenOnDeath);
+					}
+
+					KillEnemy(FromAngle * 10000.f);
+				}
 			}
-		}
-		else
-		{
-			if (PlayerRef->GetPossessedEnemy() == this)
+			else
 			{
-				PlayerRef->PossessedIsDamaged();
+				if (PlayerRef->GetPossessedEnemy() == this)
+				{
+					PlayerRef->PossessedIsDamaged();
+				}
 			}
 		}
 	}
-
+	
 	return Health;
 }
 
