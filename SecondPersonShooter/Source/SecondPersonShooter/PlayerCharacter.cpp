@@ -163,9 +163,9 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 				RelativeInputRotation = DirectionVec.Rotation().RotateVector(InputVector);
 			
 				//smooth
-				//PlayerController->SetControlRotation(FMath::RInterpTo(GetActorRotation(), RelativeInputRotation.Rotation(), DeltaSeconds, TurnRate));
+				PlayerController->SetControlRotation(FMath::RInterpTo(GetActorRotation(), RelativeInputRotation.Rotation(), DeltaSeconds, TurnRate));
 				//no smooth
-				PlayerController->SetControlRotation(RelativeInputRotation.Rotation());
+				//PlayerController->SetControlRotation(RelativeInputRotation.Rotation());
 			}
 		}
 	
