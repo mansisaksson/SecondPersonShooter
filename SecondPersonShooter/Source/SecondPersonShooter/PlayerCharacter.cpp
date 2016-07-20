@@ -116,27 +116,59 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 			}
 		}
 
+		// Direction relative possessed enemy, used for movement and rotation
+		FVector DirectionVec = PossessedEnemy->GetTransform().GetLocation()-GetTransform().GetLocation();
+		FVector InputVector;
+		
+		// Move Player Stuff
+		if ((Controller != NULL))
+		{
+			if (PossessedEnemy != NULL)
+			{
+				FVector2D speed = FVector2D(xMoveDirection, yMoveDirection);
+				if( speed.Size() > 0.3)
+				{			
+					if(speed.Size() > 0.9)
+					{
+						speed.Normalize();
+						xMoveDirection = speed.X;
+						yMoveDirection = speed.Y;
+					}
+					InputVector = FVector(-xMoveDirection, -yMoveDirection, 0.f);
+					RelativeInputRotation = DirectionVec.Rotation().RotateVector(InputVector);
+				
+					AddMovementInput(RelativeInputRotation, RelativeInputRotation.Size()*2.5);
+				}
+			}
+		}
+		
 		// Rotate Player Stuff
 		if (PossessedEnemy != NULL)
 		{
-			if ((xTurnRate * xTurnRate) + (yTurnRate * yTurnRate) > 0.5f)
-			{
-				
+			FVector2D direction = FVector2D(xTurnRate, yTurnRate);
+			if( direction.Size() > 0.3)
+			{			
+				if(direction.Size() > 0.9)
+				{
+					direction.Normalize();
+					xTurnRate = direction.X;
+					yTurnRate = direction.Y;
+				}
 				//relative enemy direction
 				//FVector InputVector(-xTurnRate, yTurnRate, 0.f);
 				//RelativeInputRotation = PossessedEnemy->GetTransform().TransformVectorNoScale(InputVector);
 
 				//relative direction between enemy and player
-				FVector InputVector(xTurnRate, -yTurnRate, 0.f);
-				FVector DirectionVec = PossessedEnemy->GetTransform().GetLocation()-GetTransform().GetLocation();
+				InputVector = FVector(xTurnRate, -yTurnRate, 0.f);
 				RelativeInputRotation = DirectionVec.Rotation().RotateVector(InputVector);
-				
+			
 				//smooth
-				PlayerController->SetControlRotation(FMath::RInterpTo(GetActorRotation(), RelativeInputRotation.Rotation(), DeltaSeconds, TurnRate));
+				//PlayerController->SetControlRotation(FMath::RInterpTo(GetActorRotation(), RelativeInputRotation.Rotation(), DeltaSeconds, TurnRate));
 				//no smooth
-				//PlayerController->SetControlRotation(RelativeInputRotation.Rotation());
+				PlayerController->SetControlRotation(RelativeInputRotation.Rotation());
 			}
 		}
+	
 	}
 	
 
@@ -264,34 +296,14 @@ void APlayerCharacter::MoveForward(float Value)
 {
 	if (bIsDead == false)
 	{
-		if ((Controller != NULL) && (Value != 0.0f))
-		{
-			if (PossessedEnemy != NULL)
-			{
-				const FRotator Rotation = PossessedEnemy->GetController()->GetControlRotation();
-				const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-				AddMovementInput(Direction, Value);
-			}
-		}
+		xMoveDirection = Value;
 	}
 }
 void APlayerCharacter::MoveRight(float Value)
 {
 	if (bIsDead == false)
 	{
-		if ((Controller != NULL) && (Value != 0.0f))
-		{
-			if (PossessedEnemy != NULL)
-			{
-				const FRotator Rotation = PossessedEnemy->GetController()->GetControlRotation();
-				const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-				AddMovementInput(Direction, Value);
-			}
-		}
+		yMoveDirection = Value;
 	}
 }
 
