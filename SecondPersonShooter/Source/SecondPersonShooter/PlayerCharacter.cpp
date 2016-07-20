@@ -52,11 +52,15 @@ APlayerCharacter::APlayerCharacter()
 	TVFadeMax = 0;
 	TVFadeMin = 0;
 	TVFadedTime = 0;
+	
 	Health = 100.f;
 	MaxHealth = 100.f;
 	Special = 100.f;
 	MaxSpecial = 100.f;
 	shieldTime = 0;
+	SuperSpeed = 0;
+	AttackSpeedBonus = 1.0;
+	MoveSpeedBonus = 1.0;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -82,6 +86,19 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 		{
 			if (shieldTime > 0)
 				shieldTime -= DeltaSeconds;
+			
+			if(SuperSpeed > 0)
+			{
+				AttackSpeedBonus = 3.0;
+				MoveSpeedBonus = 3.0;
+				SuperSpeed -= DeltaSeconds;
+			}	
+			else
+			{
+				SuperSpeed = 0;
+				AttackSpeedBonus = 1.0;
+				MoveSpeedBonus = 1.0;
+			}	
 
 			if (PossessedEnemy == NULL)
 			{
@@ -93,7 +110,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 			TimeSinceFire += DeltaSeconds;
 			if (bIsFiring)
 			{
-				if (TimeSinceFire > 1.f / ShotsPerSecond)
+				if (TimeSinceFire > 1.f / (ShotsPerSecond * AttackSpeedBonus))
 				{
 					TimeSinceFire = 0.f;
 					FireWeapon();
@@ -137,7 +154,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 					InputVector = FVector(-xMoveDirection, -yMoveDirection, 0.f);
 					RelativeInputRotation = DirectionVec.Rotation().RotateVector(InputVector);
 				
-					AddMovementInput(RelativeInputRotation, RelativeInputRotation.Size()*2.5);
+					AddMovementInput(RelativeInputRotation, RelativeInputRotation.Size()*2.5 * MoveSpeedBonus);
 				}
 			}
 		}

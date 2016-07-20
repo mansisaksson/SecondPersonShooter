@@ -106,6 +106,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float MaxSpecial;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float SuperSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	
+	float AttackSpeedBonus;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float MoveSpeedBonus;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	USoundBase* StaticSound;
 
