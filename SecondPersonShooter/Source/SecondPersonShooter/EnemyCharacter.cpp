@@ -66,9 +66,9 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);
 
-	if (gameRunning)
+	if (gameRunning && bIsAlive)
 	{
-		if (bIsAlive && DisableTime <= 0.f)
+		if (DisableTime <= 0.f)
 		{
 			GetCharacterMovement()->MaxWalkSpeed += SpeedUpRate * DeltaTime;
 
@@ -162,6 +162,7 @@ void AEnemyCharacter::KillEnemy(FVector Impulse)
 
 	bIsAlive = false;
 
+	GetController()->StopMovement();
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
