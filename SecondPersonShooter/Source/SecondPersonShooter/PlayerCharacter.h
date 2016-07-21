@@ -2,6 +2,15 @@
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	StarterWeapon		UMETA(DisplayName = "StarterWeapon"),
+	Shotgun		UMETA(DisplayName = "Shotgun"),
+	Laser		UMETA(DisplayName = "Laser")
+};
+
+
 UCLASS(config=Game)
 class APlayerCharacter : public ACharacter
 {
@@ -70,6 +79,8 @@ protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
+
+	
 	void FaceUp(float Value);
 	void FaceRight(float Value);
 	void SwapCloser_Input();
@@ -78,7 +89,9 @@ protected:
 	void StartFire();
 	void StopFire();
 	void FireWeapon();
-
+	void FireNormalWeapon();
+	void UpdatePowerups(float DeltaSeconds);
+	
 	UFUNCTION(BlueprintNativeEvent)
 	void OnFire();
 	void OnFire_Implementation();
@@ -126,6 +139,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* TrailParticle;
 
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	EWeaponType weapon;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float SuperWeapon;
+	
 	class AEnemyCharacter* PossessedEnemy;
 	class ADefaultGameMode* DefaultGameMode;
 	APlayerController* PlayerController;

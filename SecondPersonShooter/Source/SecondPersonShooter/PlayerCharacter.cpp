@@ -61,6 +61,7 @@ APlayerCharacter::APlayerCharacter()
 	SuperSpeed = 0;
 	AttackSpeedBonus = 1.0;
 	MoveSpeedBonus = 1.0;
+	weapon = EWeaponType::StarterWeapon;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -86,20 +87,9 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 		{
 			if (shieldTime > 0)
 				shieldTime -= DeltaSeconds;
-			
-			if(SuperSpeed > 0)
-			{
-				AttackSpeedBonus = 3.0;
-				MoveSpeedBonus = 3.0;
-				SuperSpeed -= DeltaSeconds;
-			}	
-			else
-			{
-				SuperSpeed = 0;
-				AttackSpeedBonus = 1.0;
-				MoveSpeedBonus = 1.0;
-			}	
 
+			UpdatePowerups(DeltaSeconds);
+			
 			if (PossessedEnemy == NULL)
 			{
 				PossessedEnemy = DefaultGameMode->GetNextEnemy();
@@ -120,7 +110,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 		else
 		{
 			if (PossessedEnemy == NULL)
-			{
+			{ //kan ligga i beginplay
 				for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 				{
 					AEnemyCharacter* enemy = Cast<AEnemyCharacter>(*ActorItr);
@@ -237,6 +227,32 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 		}
 	}
 	else TVFadeValue = 0;
+}
+
+void APlayerCharacter::UpdatePowerups(float DeltaSeconds)
+{
+	if(SuperSpeed > 0)
+	{
+		AttackSpeedBonus = 3.0;
+		MoveSpeedBonus = 3.0;
+		SuperSpeed -= DeltaSeconds;
+	}	
+	else
+	{
+		SuperSpeed = 0;
+		AttackSpeedBonus = 1.0;
+		MoveSpeedBonus = 1.0;
+	}	
+	
+	if(SuperWeapon > 0)
+	{
+		SuperWeapon -= DeltaSeconds;
+	}	
+	else
+	{
+		SuperWeapon = 0;
+		weapon = EWeaponType::StarterWeapon;
+	}	
 }
 
 float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
@@ -445,48 +461,59 @@ void APlayerCharacter::FireWeapon()
 	if (bIsDead == false)
 	{
 		OnFire();
+		
+		if( weapon == EWeaponType::StarterWeapon )
+			FireNormalWeapon();
+		/*else if ( weapon == EWeaponType::Shotgun )
+			;
+		else if ( weapon == EWeaponType::Laser )
+		;*/
+			
+	}
+}
 
-		if (FireSound != NULL)
-			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+void APlayerCharacter::FireNormalWeapon()
+{
+	if (FireSound != NULL)
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 
-		if (MuzzeFlash != NULL)
+	if (MuzzeFlash != NULL)
+	{
+		UParticleSystemComponent* particleComp = UGameplayStatics::SpawnEmitterAttached(MuzzeFlash, BulletSpawnComp);
+		FTransform particleTransform = particleComp->GetRelativeTransform();
+		particleTransform.SetScale3D(FVector(0.1f, 0.1f, 0.1f));
+		particleComp->SetRelativeTransform(particleTransform);
+	}
+
+	FVector TowardsLocation = BulletSpawnComp->GetComponentLocation() + (GetCapsuleComponent()->GetComponentRotation().Vector() * 50000.f);
+
+	FHitResult result;
+	ECollisionChannel collisionChannel;
+	collisionChannel = ECC_WorldDynamic;
+	FCollisionQueryParams collisionQuery;
+	collisionQuery.bTraceComplex = true;
+	FCollisionObjectQueryParams objectCollisionQuery;
+	objectCollisionQuery = FCollisionObjectQueryParams::DefaultObjectQueryParam;
+	FCollisionResponseParams collisionResponse;
+	collisionResponse = ECR_Block;
+	collisionQuery.AddIgnoredActor(this);
+
+	bool hitObject = GetWorld()->LineTraceSingleByChannel(result, BulletSpawnComp->GetComponentLocation(), TowardsLocation, collisionChannel, collisionQuery, collisionResponse);
+
+	if (hitObject && result.Actor != NULL)
+	{
+		if (HitSparks != NULL)
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitSparks, result.Location, FRotator::ZeroRotator, true);
+
+		if (TrailParticle != NULL)
 		{
-			UParticleSystemComponent* particleComp = UGameplayStatics::SpawnEmitterAttached(MuzzeFlash, BulletSpawnComp);
-			FTransform particleTransform = particleComp->GetRelativeTransform();
-			particleTransform.SetScale3D(FVector(0.1f, 0.1f, 0.1f));
-			particleComp->SetRelativeTransform(particleTransform);
+			UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TrailParticle, BulletSpawnComp->GetComponentLocation(), FRotator::ZeroRotator, true);
+			ParticleComp->SetBeamEndPoint(0, result.Location);
 		}
 
-		FVector TowardsLocation = BulletSpawnComp->GetComponentLocation() + (GetCapsuleComponent()->GetComponentRotation().Vector() * 50000.f);
-
-		FHitResult result;
-		ECollisionChannel collisionChannel;
-		collisionChannel = ECC_WorldDynamic;
-		FCollisionQueryParams collisionQuery;
-		collisionQuery.bTraceComplex = true;
-		FCollisionObjectQueryParams objectCollisionQuery;
-		objectCollisionQuery = FCollisionObjectQueryParams::DefaultObjectQueryParam;
-		FCollisionResponseParams collisionResponse;
-		collisionResponse = ECR_Block;
-		collisionQuery.AddIgnoredActor(this);
-
-		bool hitObject = GetWorld()->LineTraceSingleByChannel(result, BulletSpawnComp->GetComponentLocation(), TowardsLocation, collisionChannel, collisionQuery, collisionResponse);
-
-		if (hitObject && result.Actor != NULL)
-		{
-			if (HitSparks != NULL)
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitSparks, result.Location, FRotator::ZeroRotator, true);
-
-			if (TrailParticle != NULL)
-			{
-				UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TrailParticle, BulletSpawnComp->GetComponentLocation(), FRotator::ZeroRotator, true);
-				ParticleComp->SetBeamEndPoint(0, result.Location);
-			}
-
-			TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-			FDamageEvent DamageEvent(ValidDamageTypeClass);
-			result.Actor->TakeDamage(FMath::RandRange(40.f, 60.f), DamageEvent, GetController(), this);
-		}
+		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+		FDamageEvent DamageEvent(ValidDamageTypeClass);
+		result.Actor->TakeDamage(FMath::RandRange(40.f, 60.f), DamageEvent, GetController(), this);
 	}
 }
 
