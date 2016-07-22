@@ -90,6 +90,7 @@ protected:
 	void StopFire();
 	void FireWeapon();
 	void FireNormalWeapon();
+	void FireLaserWeapon();
 	void UpdatePowerups(float DeltaSeconds);
 	
 	UFUNCTION(BlueprintNativeEvent)
@@ -122,8 +123,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float SuperSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	
 	float AttackSpeedBonus;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float SuperWeaponSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float MoveSpeedBonus;
 	
@@ -138,7 +140,11 @@ protected:
 	UParticleSystem* HitSparks;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* TrailParticle;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
+	UParticleSystem* LaserParticle;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
+	UParticleSystem* LaserHit;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	EWeaponType weapon;
