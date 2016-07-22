@@ -69,6 +69,7 @@ SourceArt/**/*.tga
 *Timestamp
 *.rc.res
 *.dll.response
+!SecondPersonShooter/Plugins/OculusPlatformPlugin/Intermediate/Build/Win64/UE4Editor/Development/UE4Editor-OnlineSubsystemOculus.lib
 !SecondPersonShooter/Plugins/OculusPlatformPlugin/Binaries/Win64/UE4Editor-OnlineSubsystemOculus.dll
 !SecondPersonShooter/Plugins/OculusPlatformPlugin/Source/ThirdParty/Oculus/LibOVRPlatform/LibOVRPlatform/lib/LibOVRPlatform32_1.lib
 !SecondPersonShooter/Plugins/OculusPlatformPlugin/Source/ThirdParty/Oculus/LibOVRPlatform/LibOVRPlatform/lib/LibOVRPlatform64_1.lib
