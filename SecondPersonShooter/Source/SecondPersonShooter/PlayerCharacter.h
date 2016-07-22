@@ -153,6 +153,7 @@ protected:
 	float SuperWeapon;
 	
 	class AEnemyCharacter* PossessedEnemy;
+	class AEnemyCharacter* HighlightedEnemy;
 	class ADefaultGameMode* DefaultGameMode;
 	APlayerController* PlayerController;
 

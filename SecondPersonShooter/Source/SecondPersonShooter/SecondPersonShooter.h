@@ -3,7 +3,9 @@
 
 #include "EngineMinimal.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "DefaultGameMode.h"
+#include "Debug.h"
 #include "Engine.h"
 
 //General Log
@@ -24,21 +26,6 @@ static class SPS
 {
 public:
 	static class ADefaultGameMode* GetGameMode(UObject* WorldContextObject);
-};
-
-static class Debug
-{
-public:
-	static void LogOnScreen(FString message);
-	static void LogOnScreen(FString message, FColor color);
-	static void LogOnScreen(FString message, float screenTime, FColor color = FColor::White);
-
-	static void Log(FString message);
-	static void LogWarning(FString message);
-	static void LogFatalError(FString message);
-
-private:
-	Debug() {}
 };
 
 #endif

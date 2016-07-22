@@ -29,9 +29,11 @@ public:
 	void KillEnemy(FVector Impulse);
 	UFUNCTION(BlueprintCallable, Category = SetFunction)
 	void SetDefaultWalkSpeed(float Speed) { DefaultWalkSpeed = Speed; };
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = SetFunction)
+	void SetEnemyHighlighted(bool Highlight); // Gör mer skit i Blueprint
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
-	class UCameraComponent* GetFollowCamera() const { return Camera; }
+	class UCameraComponent* GetCamera() const { return Camera; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	float GetHealth() { return Health; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFuction)

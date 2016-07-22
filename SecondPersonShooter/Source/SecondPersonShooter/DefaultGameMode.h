@@ -43,6 +43,7 @@ public:
 	ADefaultGameMode();
 
 	virtual void BeginPlay();
+	virtual void PostInitializeComponents();
 	virtual void Tick(float DeltaTime);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)

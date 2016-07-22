@@ -3,6 +3,7 @@
 #include "PlayerCharacter.h"
 #include "EnemyCharacter.h"
 #include "EnemySpawner.h"
+#include "Online.h"
 #include "Engine.h"
 
 ADefaultGameMode::ADefaultGameMode()
@@ -28,6 +29,24 @@ void ADefaultGameMode::BeginPlay()
 		if (player != NULL)
 			PlayerRef = player;
 	}
+}
+
+void ADefaultGameMode::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	//Online::GetIdentityInterface()->GetUserPrivilege(*Online::GetIdentityInterface()->GetUniquePlayerId(0), EUserPrivileges::CanPlay,
+	//	IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilage, uint32 CheckResult)
+	//	{
+	//		if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
+	//		{
+	//			// User is NOT entitled.
+	//			UDebug::LogOnScreen("Failed to authorize UserID");
+	//		}
+	//		else
+	//		{
+	//			UDebug::LogOnScreen("Authorization successful!");
+	//		}
+	//	}));
 }
 
 void ADefaultGameMode::StartHordeMode()

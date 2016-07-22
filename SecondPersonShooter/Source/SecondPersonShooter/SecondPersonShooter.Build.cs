@@ -7,5 +7,6 @@ public class SecondPersonShooter : ModuleRules
 	public SecondPersonShooter(TargetInfo Target)
 	{
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" , "AIModule"});
-	}
+        PrivateDependencyModuleNames.Add("OnlineSubsystem");
+    }
 }

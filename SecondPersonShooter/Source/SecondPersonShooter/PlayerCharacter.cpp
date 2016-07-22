@@ -75,6 +75,19 @@ void APlayerCharacter::BeginPlay()
 	DefaultGameMode = Cast<ADefaultGameMode>(GetWorld()->GetAuthGameMode());
 	if (DefaultGameMode == NULL)
 		UE_LOG(LogTemp, Warning, TEXT("NO DEFAULT GAME MODE FOUND!"));
+
+	if (PossessedEnemy == NULL)
+	{ //kan ligga i beginplay
+		for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+		{
+			AEnemyCharacter* enemy = Cast<AEnemyCharacter>(*ActorItr);
+			if (enemy != NULL && enemy->StartOnThis)
+			{
+				PossessedEnemy = enemy;
+				PossessEnemy(enemy);
+			}
+		}
+	}
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -90,9 +103,16 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 				shieldTime -= DeltaSeconds;
 
 			UpdatePowerups(DeltaSeconds);
-			
+
 			if (PossessedEnemy == NULL)
 			{
+				PossessedEnemy = DefaultGameMode->GetNextEnemy();
+				PossessEnemy(PossessedEnemy);
+			}
+			else if (PossessedEnemy->IsPendingKillPending() || !PossessedEnemy->GetIsAlive())
+			{
+				UDebug::LogOnScreen("Pending Kill!");
+				// Experimental as fuuuuk
 				PossessedEnemy = DefaultGameMode->GetNextEnemy();
 				PossessEnemy(PossessedEnemy);
 			}
@@ -107,56 +127,64 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 					FireWeapon();
 				}
 			}
-		}
-		else
-		{
-			if (PossessedEnemy == NULL)
-			{ //kan ligga i beginplay
-				for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+
+			if (PossessedEnemy != NULL)
+			{
+				FVector StartPositon = PossessedEnemy->GetCamera()->GetComponentLocation();
+				FVector EndPositon = StartPositon + (PossessedEnemy->GetCamera()->GetForwardVector() * 50000.f);
+
+				FHitResult result;
+				FCollisionQueryParams collisionQuery;
+				collisionQuery.bTraceComplex = false;
+				collisionQuery.AddIgnoredActor(this);
+
+				GetWorld()->LineTraceSingleByChannel(result, StartPositon, EndPositon, ECC_WorldDynamic, collisionQuery, ECR_Block);
+
+				if (AEnemyCharacter* enemy = Cast<AEnemyCharacter>(result.GetActor()))
 				{
-					AEnemyCharacter* enemy = Cast<AEnemyCharacter>(*ActorItr);
-					if (enemy != NULL && enemy->StartOnThis)
+					if (HighlightedEnemy != enemy)
 					{
-						PossessedEnemy = enemy;
-						PossessEnemy(enemy);
+						if (HighlightedEnemy != NULL)
+							HighlightedEnemy->SetEnemyHighlighted(false);
+						enemy->SetEnemyHighlighted(true);
+						HighlightedEnemy = enemy;
 					}
+				}
+				else if (HighlightedEnemy != NULL)
+				{
+					HighlightedEnemy->SetEnemyHighlighted(false);
+					HighlightedEnemy = NULL;
 				}
 			}
 		}
 
-		// Direction relative possessed enemy, used for movement and rotation
-		FVector DirectionVec = PossessedEnemy->GetTransform().GetLocation()-GetTransform().GetLocation();
-		FVector InputVector;
-		
-		// Move Player Stuff
-		if ((Controller != NULL))
+		if (Controller != NULL && PossessedEnemy != NULL)
 		{
-			if (PossessedEnemy != NULL)
+			// Direction relative possessed enemy, used for movement and rotation
+			FVector DirectionVec = PossessedEnemy->GetTransform().GetLocation() - GetTransform().GetLocation();
+			FVector InputVector;
+
+			// Move Player Stuff
+			FVector2D speed = FVector2D(xMoveDirection, yMoveDirection);
+			if (speed.Size() > 0.3)
 			{
-				FVector2D speed = FVector2D(xMoveDirection, yMoveDirection);
-				if( speed.Size() > 0.3)
-				{			
-					if(speed.Size() > 0.9)
-					{
-						speed.Normalize();
-						xMoveDirection = speed.X;
-						yMoveDirection = speed.Y;
-					}
-					InputVector = FVector(-xMoveDirection, -yMoveDirection, 0.f);
-					RelativeInputRotation = DirectionVec.Rotation().RotateVector(InputVector);
-				
-					AddMovementInput(RelativeInputRotation, RelativeInputRotation.Size()*2.5 * MoveSpeedBonus);
+				if (speed.Size() > 0.9)
+				{
+					speed.Normalize();
+					xMoveDirection = speed.X;
+					yMoveDirection = speed.Y;
 				}
+				InputVector = FVector(-xMoveDirection, -yMoveDirection, 0.f);
+				RelativeInputRotation = DirectionVec.Rotation().RotateVector(InputVector);
+
+				AddMovementInput(RelativeInputRotation, RelativeInputRotation.Size()*2.5 * MoveSpeedBonus);
 			}
-		}
-		
-		// Rotate Player Stuff
-		if (PossessedEnemy != NULL)
-		{
+
+			// Rotate Player Stuff
 			FVector2D direction = FVector2D(xTurnRate, yTurnRate);
-			if( direction.Size() > 0.3)
-			{			
-				if(direction.Size() > 0.9)
+			if (direction.Size() > 0.3)
+			{
+				if (direction.Size() > 0.9)
 				{
 					direction.Normalize();
 					xTurnRate = direction.X;
@@ -169,14 +197,13 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 				//relative direction between enemy and player
 				InputVector = FVector(xTurnRate, -yTurnRate, 0.f);
 				RelativeInputRotation = DirectionVec.Rotation().RotateVector(InputVector);
-			
+
 				//smooth
 				PlayerController->SetControlRotation(FMath::RInterpTo(GetActorRotation(), RelativeInputRotation.Rotation(), DeltaSeconds, TurnRate));
 				//no smooth
 				//PlayerController->SetControlRotation(RelativeInputRotation.Rotation());
 			}
 		}
-	
 	}
 	
 
@@ -490,17 +517,11 @@ void APlayerCharacter::FireNormalWeapon()
 	FVector TowardsLocation = BulletSpawnComp->GetComponentLocation() + (GetCapsuleComponent()->GetComponentRotation().Vector() * 50000.f);
 
 	FHitResult result;
-	ECollisionChannel collisionChannel;
-	collisionChannel = ECC_WorldDynamic;
 	FCollisionQueryParams collisionQuery;
 	collisionQuery.bTraceComplex = true;
-	FCollisionObjectQueryParams objectCollisionQuery;
-	objectCollisionQuery = FCollisionObjectQueryParams::DefaultObjectQueryParam;
-	FCollisionResponseParams collisionResponse;
-	collisionResponse = ECR_Block;
 	collisionQuery.AddIgnoredActor(this);
 
-	bool hitObject = GetWorld()->LineTraceSingleByChannel(result, BulletSpawnComp->GetComponentLocation(), TowardsLocation, collisionChannel, collisionQuery, collisionResponse);
+	bool hitObject = GetWorld()->LineTraceSingleByChannel(result, BulletSpawnComp->GetComponentLocation(), TowardsLocation, ECC_WorldDynamic, collisionQuery, ECR_Block);
 
 	if (hitObject && result.Actor != NULL)
 	{
