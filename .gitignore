@@ -65,7 +65,7 @@ SourceArt/**/*.tga
 */PCLaunch.rc.res
 
 // OCVR Plugin
-*.modules
+//*.modules
 *Timestamp
 *.rc.res
 *.dll.response
