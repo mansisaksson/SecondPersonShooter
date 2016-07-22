@@ -56,7 +56,7 @@ SourceArt/**/*.tga
 *.pdb
 *.VC.db
 
-//FMOD Filer
+//Plugin Filer
 *.generated.h
 *.generated.cpp
 *.generated.dep.h
@@ -65,7 +65,7 @@ SourceArt/**/*.tga
 */PCLaunch.rc.res
 
 // OCVR Plugin
-//*.modules
+*.modules
 *Timestamp
 *.rc.res
 *.dll.response
