@@ -64,7 +64,11 @@ SourceArt/**/*.tga
 *.exp
 */PCLaunch.rc.res
 
-SecondPersonShooter/Plugins/ScalabilityUIPlugin/Intermediate/*
-SecondPersonShooter/Plugins/ScalabilityUIPlugin/Binaries/Win64/UE4Editor-ScalabilityUIPlugin.pdb
-SecondPersonShooter/Plugins/ScalabilityUIPlugin/Binaries/Win64/UE4-ScalabilityUIPlugin-Win64-Shipping.lib
-
+// OCVR Plugin
+*.modules
+*Timestamp
+*.rc.res
+*.dll.response
+!SecondPersonShooter/Plugins/OculusPlatformPlugin/Binaries/Win64/UE4Editor-OnlineSubsystemOculus.dll
+!SecondPersonShooter/Plugins/OculusPlatformPlugin/Source/ThirdParty/Oculus/LibOVRPlatform/LibOVRPlatform/lib/LibOVRPlatform32_1.lib
+!SecondPersonShooter/Plugins/OculusPlatformPlugin/Source/ThirdParty/Oculus/LibOVRPlatform/LibOVRPlatform/lib/LibOVRPlatform64_1.lib
