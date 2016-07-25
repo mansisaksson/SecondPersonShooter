@@ -6,8 +6,8 @@ UENUM(BlueprintType)
 enum class EWeaponType : uint8
 {
 	StarterWeapon		UMETA(DisplayName = "StarterWeapon"),
-	Shotgun		UMETA(DisplayName = "Shotgun"),
-	Laser		UMETA(DisplayName = "Laser")
+	Shotgun				UMETA(DisplayName = "Shotgun"),
+	Laser				UMETA(DisplayName = "Laser")
 };
 
 
@@ -70,6 +70,7 @@ public:
 	void PossessedIsKilled();
 	UFUNCTION(BlueprintCallable, Category = CallFunction)
 	void PossessedIsDamaged();
+
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
@@ -79,8 +80,6 @@ protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
-
-	
 	void FaceUp(float Value);
 	void FaceRight(float Value);
 	void SwapCloser_Input();
@@ -119,38 +118,36 @@ protected:
 	float Special;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float MaxSpecial;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float SuperWeaponTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	EWeaponType weapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	float SuperSpeed;
+	float SuperSpeedTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float AttackSpeedBonus;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float SuperWeaponSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	float MoveSpeedBonus;
+	float DefaultMaxMoveSpeed;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	USoundBase* StaticSound;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	USoundBase* FireSound;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* MuzzeFlash;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* HitSparks;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* TrailParticle;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* LaserParticle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* LaserHit;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	EWeaponType weapon;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	float SuperWeapon;
 	
 	class AEnemyCharacter* PossessedEnemy;
 	class AEnemyCharacter* HighlightedEnemy;

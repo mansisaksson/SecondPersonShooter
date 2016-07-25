@@ -21,6 +21,7 @@ ADefaultGameMode::ADefaultGameMode()
 
 void ADefaultGameMode::BeginPlay()
 {
+	Super::BeginPlay();
 	CurrentGameMode = EGameMode::MenuMode;
 
 	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)

@@ -58,9 +58,8 @@ APlayerCharacter::APlayerCharacter()
 	Special = 100.f;
 	MaxSpecial = 100.f;
 	shieldTime = 0;
-	SuperSpeed = 0;
+	SuperSpeedTime = 0;
 	AttackSpeedBonus = 1.0;
-	MoveSpeedBonus = 1.0;
 	SuperWeaponSpeed = 1.0;
 	weapon = EWeaponType::StarterWeapon;
 }
@@ -88,6 +87,8 @@ void APlayerCharacter::BeginPlay()
 			}
 		}
 	}
+
+	DefaultMaxMoveSpeed = GetCharacterMovement()->MaxWalkSpeed;
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -111,8 +112,6 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 			}
 			else if (PossessedEnemy->IsPendingKillPending() || !PossessedEnemy->GetIsAlive())
 			{
-				UDebug::LogOnScreen("Pending Kill!");
-				// Experimental as fuuuuk
 				PossessedEnemy = DefaultGameMode->GetNextEnemy();
 				PossessEnemy(PossessedEnemy);
 			}
@@ -177,7 +176,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 				InputVector = FVector(-xMoveDirection, -yMoveDirection, 0.f);
 				RelativeInputRotation = DirectionVec.Rotation().RotateVector(InputVector);
 
-				AddMovementInput(RelativeInputRotation, RelativeInputRotation.Size()*2.5 * MoveSpeedBonus);
+				AddMovementInput(RelativeInputRotation, RelativeInputRotation.Size());
 			}
 
 			// Rotate Player Stuff
@@ -259,27 +258,26 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 
 void APlayerCharacter::UpdatePowerups(float DeltaSeconds)
 {
-	if(SuperSpeed > 0)
+	//IsPendingKill();
+	if(SuperSpeedTime > 0)
 	{
-		AttackSpeedBonus = 3.0;
-		MoveSpeedBonus = 3.0;
-		SuperSpeed -= DeltaSeconds;
+		SuperSpeedTime -= DeltaSeconds;
 	}	
 	else
 	{
-		SuperSpeed = 0;
+		SuperSpeedTime = 0;
 		AttackSpeedBonus = 1.0;
-		MoveSpeedBonus = 1.0;
+		GetCharacterMovement()->MaxWalkSpeed = DefaultMaxMoveSpeed;
 	}	
 	
-	if(SuperWeapon > 0)
+	if(SuperWeaponTime > 0)
 	{
-		SuperWeapon -= DeltaSeconds;
+		SuperWeaponTime -= DeltaSeconds;
 	}	
 	else
 	{
 		SuperWeaponSpeed = 1.0;
-		SuperWeapon = 0;
+		SuperWeaponTime = 0;
 		weapon = EWeaponType::StarterWeapon;
 	}	
 }
