@@ -146,6 +146,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* LaserHit;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
+	UParticleSystem* ShieldHit;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	EWeaponType weapon;
 	

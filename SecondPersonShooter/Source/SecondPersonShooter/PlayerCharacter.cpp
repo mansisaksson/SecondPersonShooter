@@ -525,18 +525,32 @@ void APlayerCharacter::FireNormalWeapon()
 
 	if (hitObject && result.Actor != NULL)
 	{
-		if (HitSparks != NULL)
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitSparks, result.Location, FRotator::ZeroRotator, true);
-
-		if (TrailParticle != NULL)
+		if(PossessedEnemy == result.Actor)
 		{
-			UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TrailParticle, BulletSpawnComp->GetComponentLocation(), FRotator::ZeroRotator, true);
-			ParticleComp->SetBeamEndPoint(0, result.Location);
-		}
+			
+			if (HitSparks != NULL)
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitSparks, result.Location, FRotator::ZeroRotator, true);
 
-		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-		FDamageEvent DamageEvent(ValidDamageTypeClass);
-		result.Actor->TakeDamage(FMath::RandRange(40.f, 60.f), DamageEvent, GetController(), this);
+			if (ShieldHit != NULL)
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShieldHit, result.Location, FRotator::ZeroRotator, true);
+
+		}
+		else
+		{
+			
+			if (HitSparks != NULL)
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitSparks, result.Location, FRotator::ZeroRotator, true);
+
+			if (TrailParticle != NULL)
+			{
+				UParticleSystemComponent* ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TrailParticle, BulletSpawnComp->GetComponentLocation(), FRotator::ZeroRotator, true);
+				ParticleComp->SetBeamEndPoint(0, result.Location);
+			}
+
+			TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+			FDamageEvent DamageEvent(ValidDamageTypeClass);
+			result.Actor->TakeDamage(FMath::RandRange(40.f, 60.f), DamageEvent, GetController(), this);
+		}
 	}
 }
 
