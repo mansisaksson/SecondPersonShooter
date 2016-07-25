@@ -147,7 +147,8 @@ protected:
 	UParticleSystem* LaserParticle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
 	UParticleSystem* LaserHit;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
+	UParticleSystem* ShieldHit;
 	
 	class AEnemyCharacter* PossessedEnemy;
 	class AEnemyCharacter* HighlightedEnemy;
