@@ -32,6 +32,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = SetFunction)
 	void SetEnemyHighlighted(bool Highlight); // Gör mer skit i Blueprint
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Visual)
+	UParticleSystem* ShieldHit;
+	
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class UCameraComponent* GetCamera() const { return Camera; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)

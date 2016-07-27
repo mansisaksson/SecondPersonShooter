@@ -105,41 +105,50 @@ void AEnemyCharacter::Tick(float DeltaTime)
 float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	
+			
 	if (bIsAlive)
 	{
 		if (bCanTakeDamage)
 		{
-			Health -= DamageAmount;
-
-			if (Health <= 0)
+			if (PlayerRef->GetPossessedEnemy() != this)
 			{
-				if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetIsLastInWave())
-					DisableEnemy(5.f, true, true);
-				else
-				{
-					FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
-					FromAngle.Normalize();
+				Health -= DamageAmount;
 
-					if (PlayerRef->GetPossessedEnemy() == this)
-					{
-						PlayerRef->PossessedIsKilled();
-					}
+				if (Health <= 0)
+				{
+					if (SPS::GetGameMode(this)->GetCurrentGameMode() == EGameMode::WaveMode && SPS::GetGameMode(this)->GetIsLastInWave())
+						DisableEnemy(5.f, true, true);
 					else
 					{
-						scoreGivenOnDeath = (GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100));
-						PlayerRef->AddScore(scoreGivenOnDeath);
-					}
+						FVector FromAngle = GetActorLocation() - DamageCauser->GetActorLocation();
+						FromAngle.Normalize();
 
-					KillEnemy(FromAngle * 10000.f);
+						/*if (PlayerRef->GetPossessedEnemy() == this)
+						{
+							PlayerRef->PossessedIsKilled();
+						}
+						else
+						{*/
+							scoreGivenOnDeath = (GetScoreValue() / (((GetActorLocation() - PlayerRef->GetActorLocation()).Size() + 10) / 100));
+							PlayerRef->AddScore(scoreGivenOnDeath);
+						//}
+
+						KillEnemy(FromAngle * 10000.f);
+					}
 				}
+			/*	else
+				{
+					if (PlayerRef->GetPossessedEnemy() == this)
+					{
+						PlayerRef->PossessedIsDamaged();
+					}
+				}*/
 			}
 			else
 			{
-				if (PlayerRef->GetPossessedEnemy() == this)
-				{
-					PlayerRef->PossessedIsDamaged();
-				}
+				if (ShieldHit != NULL)
+					UGameplayStatics::SpawnEmitterAttached(ShieldHit, GetActorLocation());
+				
 			}
 		}
 	}
