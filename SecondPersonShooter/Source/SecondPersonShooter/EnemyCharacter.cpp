@@ -147,7 +147,7 @@ float AEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 			else
 			{
 				if (ShieldHit != NULL)
-					UGameplayStatics::SpawnEmitterAttached(ShieldHit, GetActorLocation());
+					UGameplayStatics::SpawnEmitterAttached(ShieldHit, GetCapsuleComponent());
 				
 			}
 		}
