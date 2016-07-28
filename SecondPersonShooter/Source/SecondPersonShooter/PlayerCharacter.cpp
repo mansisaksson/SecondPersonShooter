@@ -565,30 +565,60 @@ void APlayerCharacter::FireLaserWeapon()
 		particleComp->SetRelativeTransform(particleTransform);
 	}
 
-	FVector TowardsLocation = BulletSpawnComp->GetComponentLocation() + (GetCapsuleComponent()->GetComponentRotation().Vector() * 50000.f);
-
-	FHitResult result;
-	ECollisionChannel collisionChannel;
-	collisionChannel = ECC_WorldDynamic;
 	FCollisionQueryParams collisionQuery;
 	collisionQuery.bTraceComplex = true;
-	FCollisionObjectQueryParams objectCollisionQuery;
-	objectCollisionQuery = FCollisionObjectQueryParams::DefaultObjectQueryParam;
-	FCollisionResponseParams collisionResponse;
-	collisionResponse = ECR_Block;
 	collisionQuery.AddIgnoredActor(this);
+	
+	FVector TowardsLocation = BulletSpawnComp->GetComponentLocation() + (GetCapsuleComponent()->GetComponentRotation().Vector() * 50000.f);
+	FVector TowardsLocation2 = BulletSpawnComp->GetComponentLocation() + BulletSpawnComp->GetRightVector() * 50 + (GetCapsuleComponent()->GetComponentRotation().Vector() * 50000.f);
+	FVector TowardsLocation3 = BulletSpawnComp->GetComponentLocation() + BulletSpawnComp->GetRightVector() * -50 + (GetCapsuleComponent()->GetComponentRotation().Vector() * 50000.f);
+	FHitResult result;
+	FHitResult result2;
+	FHitResult result3;
 
-	bool hitObject = GetWorld()->LineTraceSingleByChannel(result, BulletSpawnComp->GetComponentLocation(), TowardsLocation, collisionChannel, collisionQuery, collisionResponse);
-
-	if (hitObject && result.Actor != NULL)
+	bool hitObject = GetWorld()->LineTraceSingleByChannel(result, BulletSpawnComp->GetComponentLocation(), TowardsLocation, ECC_WorldDynamic, collisionQuery, ECR_Block);
+	hitObject = hitObject || GetWorld()->LineTraceSingleByChannel(result2, BulletSpawnComp->GetComponentLocation()+ BulletSpawnComp->GetRightVector() * 50, TowardsLocation2, ECC_WorldDynamic, collisionQuery, ECR_Block);
+	hitObject = hitObject || GetWorld()->LineTraceSingleByChannel(result3, BulletSpawnComp->GetComponentLocation()+ BulletSpawnComp->GetRightVector() * -50, TowardsLocation3, ECC_WorldDynamic, collisionQuery, ECR_Block);
+	
+	TSet<AActor*> Actors;
+	if(hitObject)
 	{
-		if (LaserHit != NULL)
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), LaserHit, result.Location, FRotator::ZeroRotator, true);
-
-		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-		FDamageEvent DamageEvent(ValidDamageTypeClass);
-		result.Actor->TakeDamage(FMath::RandRange(25.f, 35.f), DamageEvent, GetController(), this);
+		//spawn only 1 particleeffect
+		if (result.Actor != NULL)
+		{
+			Actors.Add(result.GetActor());
+			if (LaserHit != NULL)
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), LaserHit, result.Location, FRotator::ZeroRotator, true);
+		}
+		else if(result2.Actor != NULL)
+		{
+			if (LaserHit != NULL)
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), LaserHit, result2.Location, FRotator::ZeroRotator, true);
+		}
+		else if(result3.Actor != NULL)
+		{
+			if (LaserHit != NULL)
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), LaserHit, result3.Location, FRotator::ZeroRotator, true);
+		}
+		// add all hit enemies in a set to not get duplicates
+		if(result2.Actor != NULL)
+		{
+			Actors.Add(result2.GetActor());
+		}
+		if(result3.Actor != NULL)
+		{
+			Actors.Add(result3.GetActor());
+		}
+		
 	}
+	// 
+	TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+	FDamageEvent DamageEvent(ValidDamageTypeClass);
+	for (AActor* Actor : Actors)
+	{
+		Actor->TakeDamage(FMath::RandRange(25.f, 35.f), DamageEvent, GetController(), this);
+	}
+
 }
 
 void APlayerCharacter::PossessedIsKilled()
