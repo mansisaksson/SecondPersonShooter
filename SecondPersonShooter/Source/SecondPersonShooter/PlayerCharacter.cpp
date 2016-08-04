@@ -118,7 +118,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 
 			// Fire Weapon Stuff
 			TimeSinceFire += DeltaSeconds;
-			if (bIsFiring)
+			if (bIsFiring || weapon == EWeaponType::Laser)
 			{
 				if (TimeSinceFire > 1.f / (ShotsPerSecond * AttackSpeedBonus * SuperWeaponSpeed))
 				{
@@ -126,6 +126,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 					FireWeapon();
 				}
 			}
+			
 
 			if (PossessedEnemy != NULL)
 			{
@@ -493,7 +494,7 @@ void APlayerCharacter::FireWeapon()
 			FireNormalWeapon();
 		//else if ( weapon == EWeaponType::Shotgun )
 		//	;
-		else if ( weapon == EWeaponType::Laser )
+		else if (weapon == EWeaponType::Laser)
 			FireLaserWeapon();
 			
 	}
