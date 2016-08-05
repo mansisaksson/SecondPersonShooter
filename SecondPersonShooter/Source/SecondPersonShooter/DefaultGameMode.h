@@ -43,8 +43,9 @@ public:
 	ADefaultGameMode();
 
 	virtual void BeginPlay();
-	virtual void PostInitializeComponents();
 	virtual void Tick(float DeltaTime);
+	static void AuthorizeUser();
+	static void Shutdown();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class APlayerCharacter* GetPlayerRef();
@@ -58,6 +59,8 @@ public:
 	class AEnemyCharacter* GetNextEnemy();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	class AEnemyCharacter* GetPrevEnemy();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	bool GetIsAuthorized();
 	UFUNCTION(BlueprintCallable, Category = GetFunction)
 	void RemoveEnemy(class AEnemyCharacter* enemy);
 	UFUNCTION(BlueprintCallable, Category = GetFunction)

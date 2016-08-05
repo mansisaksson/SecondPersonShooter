@@ -6,16 +6,23 @@
 #include "Online.h"
 #include "Engine.h"
 
+static int ConnectAttempts;
+static int MaxConnectAttempts;
+static bool bIsAuthorized;
+
 ADefaultGameMode::ADefaultGameMode()
 {
 	currentEnemyIndex = -1;
 	badTimeTime = 10.f;
 	SpawnTime = 2.f;
 	MaxEnemies = 3.f;
+	ConnectAttempts = 0.f;
+	MaxConnectAttempts = 10.f;
 
 	GameplayRunning = false;
 	GameLoaded = false;
 	bForceStartWave = false;
+	bIsAuthorized = false;
 	CurrentGameMode = EGameMode::MenuMode;
 }
 
@@ -29,51 +36,6 @@ void ADefaultGameMode::BeginPlay()
 		APlayerCharacter* player = Cast<APlayerCharacter>(*ActorItr);
 		if (player != NULL)
 			PlayerRef = player;
-	}
-}
-
-IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate Function(const FUniqueNetId& UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
-{
-	return IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId& UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
-	{
-		if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
-		{
-			// User is NOT entitled.
-
-		}
-		else
-		{
-			// User IS entitled
-
-		}
-	});
-}
-
-void ADefaultGameMode::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	if (Online::GetIdentityInterface()->GetUniquePlayerId(0).IsValid())
-	{
-		Online::GetIdentityInterface()->GetUserPrivilege(
-			*Online::GetIdentityInterface()->GetUniquePlayerId(0),
-			EUserPrivileges::CanPlay,
-			IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
-		{
-			if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
-			{
-				// User is NOT entitled.
-				UDebug::LogOnScreen("Authorization failed");
-			}
-			else
-			{
-				// User IS entitled
-				UDebug::LogOnScreen("Authorization successful");
-			}
-		}));
-	}
-	else
-	{
-		UDebug::LogOnScreen("Failed to get Unique Player ID");
 	}
 }
 
@@ -111,9 +73,58 @@ void ADefaultGameMode::StartWaveMode()
 	}
 }
 
+void ADefaultGameMode::AuthorizeUser()
+{
+	UDebug::LogOnScreen("Authorization successful", 20.f);
+	ConnectAttempts = MaxConnectAttempts;
+	bIsAuthorized = true;
+}
+
+void ADefaultGameMode::Shutdown()
+{
+	UDebug::LogOnScreen("Authorization failed, shutting down... not really ;)", 20.f);
+	bIsAuthorized = false;
+}
+
 void ADefaultGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (ConnectAttempts < MaxConnectAttempts)
+	{
+		UDebug::LogOnScreen("Attempting user validation...", 20.f);
+		if (Online::GetIdentityInterface().IsValid())
+		{
+			if (Online::GetIdentityInterface()->GetUniquePlayerId(0).IsValid())
+			{
+				Online::GetIdentityInterface()->GetUserPrivilege(
+					*Online::GetIdentityInterface()->GetUniquePlayerId(0),
+					EUserPrivileges::CanPlay,
+					IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
+					{
+						if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
+						{
+							// User is NOT entitled.
+							ADefaultGameMode::Shutdown();
+						}
+						else
+						{
+							// User IS entitled
+							ADefaultGameMode::AuthorizeUser();
+						}
+					}));
+			}
+			else
+			{
+				UDebug::LogOnScreen("Failed to get Unique Player ID", 20.f);
+			}
+		}
+		else
+		{
+			UDebug::LogOnScreen("Failed to get Identity Interface", 20.f);
+		}
+		ConnectAttempts++;
+	}
 
 	switch (CurrentGameMode)
 	{
@@ -129,7 +140,6 @@ void ADefaultGameMode::Tick(float DeltaTime)
 	default:
 		break;
 	}
-	
 }
 
 void ADefaultGameMode::UpdateMenuMode(float DeltaTime)
@@ -223,7 +233,6 @@ void ADefaultGameMode::AddEnemy(AEnemyCharacter* enemy)
 {
 	Enemies.Add(enemy);
 }
-
 void ADefaultGameMode::RemoveEnemy(AEnemyCharacter* enemy)
 {
 	if (Enemies.Num() > 0 && currentEnemyIndex < Enemies.Num() && currentEnemyIndex != -1)
@@ -336,6 +345,11 @@ AEnemyCharacter* ADefaultGameMode::GetRandomEnemy()
 	if (Enemies.Num() > 0)
 		return Enemies[FMath::RandRange(0, Enemies.Num() - 1)];
 	return NULL;
+}
+
+bool ADefaultGameMode::GetIsAuthorized()
+{
+	return bIsAuthorized;
 }
 
 int ADefaultGameMode::GetNumberOfEnemies()

@@ -76,7 +76,7 @@ void APlayerCharacter::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("NO DEFAULT GAME MODE FOUND!"));
 
 	if (PossessedEnemy == NULL)
-	{ //kan ligga i beginplay
+	{
 		for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 		{
 			AEnemyCharacter* enemy = Cast<AEnemyCharacter>(*ActorItr);
