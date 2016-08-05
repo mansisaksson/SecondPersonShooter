@@ -16,7 +16,7 @@
 	"Plugins": [
 		{
 			"Name": "OculusPlatformPlugin",
-			"Enabled": false
+			"Enabled": true
 		}
 	]
 }

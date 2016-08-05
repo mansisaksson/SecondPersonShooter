@@ -32,22 +32,49 @@ void ADefaultGameMode::BeginPlay()
 	}
 }
 
+IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate Function(const FUniqueNetId& UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
+{
+	return IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId& UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
+	{
+		if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
+		{
+			// User is NOT entitled.
+
+		}
+		else
+		{
+			// User IS entitled
+
+		}
+	});
+}
+
 void ADefaultGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	//Online::GetIdentityInterface()->GetUserPrivilege(*Online::GetIdentityInterface()->GetUniquePlayerId(0), EUserPrivileges::CanPlay,
-	//	IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilage, uint32 CheckResult)
-	//	{
-	//		if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
-	//		{
-	//			// User is NOT entitled.
-	//			UDebug::LogOnScreen("Failed to authorize UserID");
-	//		}
-	//		else
-	//		{
-	//			UDebug::LogOnScreen("Authorization successful!");
-	//		}
-	//	}));
+	if (Online::GetIdentityInterface()->GetUniquePlayerId(0).IsValid())
+	{
+		Online::GetIdentityInterface()->GetUserPrivilege(
+			*Online::GetIdentityInterface()->GetUniquePlayerId(0),
+			EUserPrivileges::CanPlay,
+			IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
+		{
+			if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
+			{
+				// User is NOT entitled.
+				UDebug::LogOnScreen("Authorization failed");
+			}
+			else
+			{
+				// User IS entitled
+				UDebug::LogOnScreen("Authorization successful");
+			}
+		}));
+	}
+	else
+	{
+		UDebug::LogOnScreen("Failed to get Unique Player ID");
+	}
 }
 
 void ADefaultGameMode::StartHordeMode()
