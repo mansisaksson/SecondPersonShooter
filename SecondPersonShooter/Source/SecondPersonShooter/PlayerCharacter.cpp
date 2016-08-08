@@ -4,6 +4,8 @@
 #include "DefaultGameMode.h"
 #include "Engine.h"
 
+#include "../../Plugins/OculusPlatformPlugin/Source/ThirdParty/Oculus/LibOVRPlatform/LibOVRPlatform/include/OVR_Platform.h"
+
 APlayerCharacter::APlayerCharacter()
 {
 	// Set size for collision capsule
@@ -302,6 +304,8 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 			FadeResetSpeed = 0;
 			FadeRed = true;
 			bIsDead = true;
+
+			SPS::GetGameMode(this)->OnPlayerDeath();
 
 			GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);

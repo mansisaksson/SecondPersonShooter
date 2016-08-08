@@ -6,6 +6,8 @@
 #include "Online.h"
 #include "Engine.h"
 
+#include "../../Plugins/OculusPlatformPlugin/Source/ThirdParty/Oculus/LibOVRPlatform/LibOVRPlatform/include/OVR_Platform.h"
+
 static int ConnectAttempts;
 static int MaxConnectAttempts;
 static bool bIsAuthorized;
@@ -23,7 +25,13 @@ ADefaultGameMode::ADefaultGameMode()
 	GameLoaded = false;
 	bForceStartWave = false;
 	bIsAuthorized = false;
+	bGetScoreFromServer = false;
+	bSendScoreToServer = false;
+	bHasUpdatedScore = false;
 	CurrentGameMode = EGameMode::MenuMode;
+
+	TimeToResendMessage = 0;
+	TimeToTimeOutMessage = 15;
 }
 
 void ADefaultGameMode::BeginPlay()
@@ -73,6 +81,12 @@ void ADefaultGameMode::StartWaveMode()
 	}
 }
 
+void ADefaultGameMode::OnPlayerDeath()
+{
+	bGetScoreFromServer = true;
+	TimeToTimeOutMessage = 15.f;
+}
+
 void ADefaultGameMode::AuthorizeUser()
 {
 	UDebug::LogOnScreen("Authorization successful", 20.f);
@@ -90,9 +104,98 @@ void ADefaultGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bIsAuthorized)
+	{
+		TimeToResendMessage -= DeltaTime;
+		TimeToTimeOutMessage -= DeltaTime;
+		if (TimeToTimeOutMessage > 0)
+		{
+			if (bGetScoreFromServer && TimeToResendMessage <= 0)
+			{
+				TimeToResendMessage = 0.2f;
+				UDebug::LogOnScreen("Sending Leader Board Get Request.");
+				ovr_Leaderboard_GetEntries("warehouse1", 10, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtTop);
+			}
+			else if (bSendScoreToServer && TimeToResendMessage <= 0)
+			{
+				TimeToResendMessage = 0.2;
+				UDebug::LogOnScreen("Sending Leader Board Write Request.");
+				// For Write Request: 
+				//ovr_Leaderboard_WriteEntry ("LEADERBOARD-NAME", [USER-SCORE], [OPTIONAL GAME DATA], [SIZE OF OPTIONAL DATA], false)
+			}
+		}
+
+		ovrMessage *response = ovr_PopMessage();
+		if (response)
+		{
+			int messageType = ovr_Message_GetType(response);
+
+			if (messageType == ovrMessage_Entitlement_GetIsViewerEntitled)
+			{
+				UDebug::LogOnScreen("Entitlement request Received.", 10.f, FColor::Yellow);
+			}
+			else if (messageType == ovrMessage_Leaderboard_GetEntries)
+			{
+				bGetScoreFromServer = false;
+				TimeToTimeOutMessage = 15.f;
+
+				if (ovr_Message_IsError(response) != 0) 
+				{
+					FString stringuu(ovr_Error_GetMessage(ovr_Message_GetError(response)));
+					UDebug::LogOnScreen("Error: " + stringuu, 20.f, FColor::Red);
+				}
+				else
+				{
+					UDebug::LogOnScreen("Received Leader Board Get Message", 10.f, FColor::Green);
+
+					// Retrieve your ovrLeaderboardEntryArrayHandle
+					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
+					int count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
+					if (count > 0) {
+						ovrLeaderboardEntryHandle firstItem = ovr_LeaderboardEntryArray_GetElement(leaderboards, 0);
+					}
+
+					// Gör iårdning något att skicka till servern
+					// Cool kod :D
+					// Suck code much wow
+
+					bSendScoreToServer = true;
+				}
+			}
+			if (messageType == ovrMessage_Leaderboard_WriteEntry)
+			{
+				bSendScoreToServer = false;
+				TimeToTimeOutMessage = 15.f;
+
+				if (ovr_Message_IsError(response) != 0) 
+				{
+					FString stringuu(ovr_Error_GetMessage(ovr_Message_GetError(response)));
+					UDebug::LogOnScreen("Error: " + stringuu, 20.f, FColor::Red);
+				}
+				else
+				{
+					UDebug::LogOnScreen("Received Leader Board Write Message.", 10.f, FColor::Green);
+
+					// Retrieve your ovrLeaderboardUpdateStatusHandle
+					ovrLeaderboardUpdateStatusHandle updateStatus = ovr_Message_GetLeaderboardUpdateStatus(response);
+					bool didLeaderboardUpdate = ovr_LeaderboardUpdateStatus_GetDidUpdate(updateStatus);
+
+					if (didLeaderboardUpdate)
+						UDebug::LogOnScreen("Leader Board Updated Successfully.", FColor::Green);
+					else
+						UDebug::LogOnScreen("Failed to Update Leader Board.", FColor::Red);
+				}
+			}
+			else {
+				UDebug::LogOnScreen("Unknown OVR Request Received.", 10.f, FColor::Yellow);
+			}
+			ovr_FreeMessage(response);
+		}
+	}
+
 	if (ConnectAttempts < MaxConnectAttempts)
 	{
-		UDebug::LogOnScreen("Attempting user validation...", 20.f);
+		UDebug::LogOnScreen("Attempting user validation...", 15.f);
 		if (Online::GetIdentityInterface().IsValid())
 		{
 			if (Online::GetIdentityInterface()->GetUniquePlayerId(0).IsValid())
@@ -103,25 +206,20 @@ void ADefaultGameMode::Tick(float DeltaTime)
 					IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
 					{
 						if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
-						{
-							// User is NOT entitled.
 							ADefaultGameMode::Shutdown();
-						}
+
 						else
-						{
-							// User IS entitled
 							ADefaultGameMode::AuthorizeUser();
-						}
 					}));
 			}
 			else
 			{
-				UDebug::LogOnScreen("Failed to get Unique Player ID", 20.f);
+				UDebug::LogOnScreen("Failed to get Unique Player ID", 15.f);
 			}
 		}
 		else
 		{
-			UDebug::LogOnScreen("Failed to get Identity Interface", 20.f);
+			UDebug::LogOnScreen("Failed to get Identity Interface", 15.f);
 		}
 		ConnectAttempts++;
 	}

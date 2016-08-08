@@ -78,6 +78,8 @@ public:
 	int32 GetEnemiesToSpawnInWave() { return EnemiesToSpawn.Num(); };
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	bool GetIsLastInWave() { return GetEnemiesToSpawnInWave() == 0 && GetNumberOfEnemies() == 1; };
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	bool GetHasUpdatedScore() { return bHasUpdatedScore; };
 
 	UFUNCTION(BlueprintCallable, Category = SetFunction)
 	void SetIsLoaded(bool isLoaded) { GameLoaded = isLoaded; }
@@ -89,6 +91,8 @@ public:
 	void StartWaveMode();
 	UFUNCTION(BlueprintCallable, Category = SetFunction)
 	void SetEnemyWaves(TArray<FEnemyWave> EnemyWaves) { this->EnemyWaves = EnemyWaves;	};
+
+	void OnPlayerDeath();
 
 protected:
 	void UpdateMenuMode(float DeltaTime);
@@ -118,7 +122,6 @@ protected:
 	float badTimeTime;
 	int MaxEnemies;
 
-
 	// Shared Variables
 	int currentEnemyIndex;
 
@@ -128,7 +131,12 @@ protected:
 
 	bool GameplayRunning;
 	bool GameLoaded;
+
+	float TimeToResendMessage;
+	float TimeToTimeOutMessage;
+
+	bool bGetScoreFromServer;
+	bool bSendScoreToServer;
+	bool bHasUpdatedScore;
 };
-
-
 

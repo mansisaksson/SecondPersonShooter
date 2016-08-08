@@ -179,5 +179,6 @@ protected:
 	float yTurnRate;
 	float xMoveDirection;
 	float yMoveDirection;
+
 };
 
