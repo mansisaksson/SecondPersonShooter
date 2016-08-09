@@ -65,6 +65,8 @@ public:
 	float GetSpecial() { return Special; }
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	float GetMaxSpecial() { return MaxSpecial; }
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	int32 GetScore() { return score; };
 
 	UFUNCTION(BlueprintCallable, Category = CallFunction)
 	void PossessedIsKilled();

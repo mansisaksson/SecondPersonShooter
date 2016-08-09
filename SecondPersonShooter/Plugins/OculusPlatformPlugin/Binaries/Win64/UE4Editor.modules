@@ -1,8 +1,8 @@
 {
 	"Changelist" : 3028348,
-	"BuildId" : "d86e024e-ec1f-4f2b-84eb-908a43b8d611",
+	"BuildId" : "72b06c32-cb1f-4e59-ac86-a215443f63f8",
 	"Modules" : 
 	{
-		"OnlineSubsystemOculus" : "UE4Editor-OnlineSubsystemOculus-8778.dll"
+		"OnlineSubsystemOculus" : "UE4Editor-OnlineSubsystemOculus-6768.dll"
 	}
 }

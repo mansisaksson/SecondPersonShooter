@@ -83,7 +83,7 @@ void ADefaultGameMode::StartWaveMode()
 
 void ADefaultGameMode::OnPlayerDeath()
 {
-	bGetScoreFromServer = true;
+	bSendScoreToServer = true;
 	TimeToTimeOutMessage = 15.f;
 }
 
@@ -112,16 +112,17 @@ void ADefaultGameMode::Tick(float DeltaTime)
 		{
 			if (bGetScoreFromServer && TimeToResendMessage <= 0)
 			{
-				TimeToResendMessage = 0.2f;
+				TimeToResendMessage = 0.1f;
 				UDebug::LogOnScreen("Sending Leader Board Get Request.");
-				ovr_Leaderboard_GetEntries("warehouse1", 10, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtTop);
+				ovr_Leaderboard_GetEntries("warehouse1", 8, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtCenteredOnViewer);
 			}
 			else if (bSendScoreToServer && TimeToResendMessage <= 0)
 			{
-				TimeToResendMessage = 0.2;
+				TimeToResendMessage = 0.1;
 				UDebug::LogOnScreen("Sending Leader Board Write Request.");
-				// For Write Request: 
-				//ovr_Leaderboard_WriteEntry ("LEADERBOARD-NAME", [USER-SCORE], [OPTIONAL GAME DATA], [SIZE OF OPTIONAL DATA], false)
+
+				long long score = PlayerRef->GetScore();
+				ovr_Leaderboard_WriteEntry("warehouse1", score, NULL, NULL, false);
 			}
 		}
 
@@ -129,7 +130,7 @@ void ADefaultGameMode::Tick(float DeltaTime)
 		if (response)
 		{
 			int messageType = ovr_Message_GetType(response);
-
+			
 			if (messageType == ovrMessage_Entitlement_GetIsViewerEntitled)
 			{
 				UDebug::LogOnScreen("Entitlement request Received.", 10.f, FColor::Yellow);
@@ -148,21 +149,23 @@ void ADefaultGameMode::Tick(float DeltaTime)
 				{
 					UDebug::LogOnScreen("Received Leader Board Get Message", 10.f, FColor::Green);
 
-					// Retrieve your ovrLeaderboardEntryArrayHandle
 					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
 					int count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
-					if (count > 0) {
-						ovrLeaderboardEntryHandle firstItem = ovr_LeaderboardEntryArray_GetElement(leaderboards, 0);
+
+					for (size_t i = 0; i < count; i++)
+					{
+						ovrLeaderboardEntryHandle Entry = ovr_LeaderboardEntryArray_GetElement(leaderboards, i);
+						
+						long long score = ovr_LeaderboardEntry_GetScore(Entry);
+						int rank = ovr_LeaderboardEntry_GetRank(Entry);
+						ovrUserHandle handle = ovr_LeaderboardEntry_GetUser(Entry);
+						FString OculusName(ovr_User_GetOculusID(handle));
+
+						UDebug::LogOnScreen("User Score: " + OculusName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), score, rank), 20.f, FColor::Emerald);
 					}
-
-					// Gör iårdning något att skicka till servern
-					// Cool kod :D
-					// Suck code much wow
-
-					bSendScoreToServer = true;
 				}
 			}
-			if (messageType == ovrMessage_Leaderboard_WriteEntry)
+			else if (messageType == ovrMessage_Leaderboard_WriteEntry)
 			{
 				bSendScoreToServer = false;
 				TimeToTimeOutMessage = 15.f;
@@ -185,8 +188,11 @@ void ADefaultGameMode::Tick(float DeltaTime)
 					else
 						UDebug::LogOnScreen("Failed to Update Leader Board.", FColor::Red);
 				}
+
+				bGetScoreFromServer = true;
 			}
-			else {
+			else 
+			{
 				UDebug::LogOnScreen("Unknown OVR Request Received.", 10.f, FColor::Yellow);
 			}
 			ovr_FreeMessage(response);
