@@ -92,6 +92,8 @@ public:
 	bool GetIsLastInWave() { return GetEnemiesToSpawnInWave() == 0 && GetNumberOfEnemies() == 1; };
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
 	bool GetHasUpdatedScore() { return bHasUpdatedScore; };
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = GetFunction)
+	FString GetOculusName();
 
 	UFUNCTION(BlueprintCallable, Category = SetFunction)
 	void SetIsLoaded(bool isLoaded) { GameLoaded = isLoaded; }
@@ -107,7 +109,7 @@ public:
 	void OnPlayerDeath();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<FPlayerScore> PlayerScores;
+	TArray<FPlayerScore> PlayerScores;
 
 
 protected:
@@ -156,5 +158,7 @@ protected:
 	bool bSendScoreToServer;
 	bool bSendValidationRequest;
 	bool bHasUpdatedScore;
+
+	FString PlayerOculusName;
 };
 

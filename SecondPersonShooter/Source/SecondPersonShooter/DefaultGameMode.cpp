@@ -11,6 +11,7 @@
 static int ConnectAttempts;
 static int MaxConnectAttempts;
 static bool bIsAuthorized;
+ovrUserHandle PlayerHandle;
 
 ADefaultGameMode::ADefaultGameMode()
 {
@@ -99,6 +100,8 @@ void ADefaultGameMode::AuthorizeUser()
 	UDebug::LogOnScreen("Authorization successful", 20.f);
 	ConnectAttempts = MaxConnectAttempts;
 	bIsAuthorized = true;
+	ovr_User_GetLoggedInUser();
+	//Online::GetIdentityInterface()->GetUserAccount(*Online::GetIdentityInterface()->GetUniquePlayerId(0).Get())->GetDisplayName();
 }
 
 void ADefaultGameMode::Shutdown()
@@ -176,7 +179,18 @@ void ADefaultGameMode::Tick(float DeltaTime)
 		{
 			int messageType = ovr_Message_GetType(response);
 
-			if (messageType == ovrMessage_Leaderboard_GetEntries)
+			if (messageType == ovrMessage_User_GetLoggedInUser)
+			{
+				if (ovr_Message_IsError(response) != 0)
+					UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
+
+				else
+				{
+					PlayerHandle = ovr_Message_GetUser(response);
+					PlayerOculusName = ovr_User_GetOculusID(PlayerHandle);
+				}
+			}
+			else if (messageType == ovrMessage_Leaderboard_GetEntries)
 			{
 				bGetScoreFromServer = false;
 				TimeToTimeOutMessage = TimeOutTime;
@@ -188,7 +202,7 @@ void ADefaultGameMode::Tick(float DeltaTime)
 				else
 				{
 					UDebug::LogOnScreen("Received Leader Board Get Message", 10.f, FColor::Green);
-
+					
 					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
 					int count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
 
@@ -205,6 +219,7 @@ void ADefaultGameMode::Tick(float DeltaTime)
 
 						PlayerScores.Add(PlayerScore);
 						UDebug::LogOnScreen("User Score: " + PlayerScore.PlayerName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), PlayerScore.Score, PlayerScore.Rank), 20.f, FColor::Emerald);
+						bHasUpdatedScore = true;
 					}
 				}
 			}
@@ -472,4 +487,9 @@ bool ADefaultGameMode::GetIsAuthorized()
 int ADefaultGameMode::GetNumberOfEnemies()
 {
 	return Enemies.Num();
+}
+
+FString ADefaultGameMode::GetOculusName()
+{
+	return PlayerOculusName;
 }
