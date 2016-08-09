@@ -32,6 +32,18 @@ struct FEnemyWave
 	float SpawnSpeed = 1.f;
 };
 
+USTRUCT(BlueprintType)
+struct FPlayerScore
+{
+	GENERATED_USTRUCT_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Score = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString PlayerName = "hej";
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Rank = 0;
+};
+
 UCLASS(minimalapi)
 class ADefaultGameMode : public AGameMode
 {
@@ -94,6 +106,10 @@ public:
 
 	void OnPlayerDeath();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FPlayerScore> PlayerScores;
+
+
 protected:
 	void UpdateMenuMode(float DeltaTime);
 	void UpdateHordeMode(float DeltaTime);
@@ -134,9 +150,11 @@ protected:
 
 	float TimeToResendMessage;
 	float TimeToTimeOutMessage;
+	float TimeOutTime;
 
 	bool bGetScoreFromServer;
 	bool bSendScoreToServer;
+	bool bSendValidationRequest;
 	bool bHasUpdatedScore;
 };
 

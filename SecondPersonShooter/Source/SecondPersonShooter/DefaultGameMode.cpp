@@ -28,14 +28,21 @@ ADefaultGameMode::ADefaultGameMode()
 	bGetScoreFromServer = false;
 	bSendScoreToServer = false;
 	bHasUpdatedScore = false;
+	bSendValidationRequest = false;
+
 	CurrentGameMode = EGameMode::MenuMode;
 
 	TimeToResendMessage = 0;
-	TimeToTimeOutMessage = 15;
+	TimeOutTime = 15.f;
+	TimeToTimeOutMessage = TimeOutTime;
 }
 
 void ADefaultGameMode::BeginPlay()
 {
+	//ovr_PlatformInitializeWindowsEx("1018182464968654", PLATFORM_PRODUCT_VERSION, PLATFORM_MAJOR_VERSION);
+	bSendValidationRequest = true;
+	TimeToTimeOutMessage = TimeOutTime;
+
 	Super::BeginPlay();
 	CurrentGameMode = EGameMode::MenuMode;
 
@@ -84,7 +91,7 @@ void ADefaultGameMode::StartWaveMode()
 void ADefaultGameMode::OnPlayerDeath()
 {
 	bSendScoreToServer = true;
-	TimeToTimeOutMessage = 15.f;
+	TimeToTimeOutMessage = TimeOutTime;
 }
 
 void ADefaultGameMode::AuthorizeUser()
@@ -104,6 +111,37 @@ void ADefaultGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (ConnectAttempts < MaxConnectAttempts)
+	{
+		UDebug::LogOnScreen("Attempting user validation...", 15.f);
+		if (Online::GetIdentityInterface().IsValid())
+		{
+			if (Online::GetIdentityInterface()->GetUniquePlayerId(0).IsValid())
+			{
+				Online::GetIdentityInterface()->GetUserPrivilege(
+					*Online::GetIdentityInterface()->GetUniquePlayerId(0),
+					EUserPrivileges::CanPlay,
+					IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
+				{
+					if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
+						ADefaultGameMode::Shutdown();
+
+					else
+						ADefaultGameMode::AuthorizeUser();
+				}));
+			}
+			else
+			{
+				UDebug::LogOnScreen("Failed to get Unique Player ID", 15.f);
+			}
+		}
+		else
+		{
+			UDebug::LogOnScreen("Failed to get Identity Interface", 15.f);
+		}
+		ConnectAttempts++;
+	}
+
 	if (bIsAuthorized)
 	{
 		TimeToResendMessage -= DeltaTime;
@@ -114,7 +152,7 @@ void ADefaultGameMode::Tick(float DeltaTime)
 			{
 				TimeToResendMessage = 0.1f;
 				UDebug::LogOnScreen("Sending Leader Board Get Request.");
-				ovr_Leaderboard_GetEntries("warehouse1", 8, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtCenteredOnViewer);
+				ovr_Leaderboard_GetEntries("warehouse1", 3, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtCenteredOnViewer);
 			}
 			else if (bSendScoreToServer && TimeToResendMessage <= 0)
 			{
@@ -125,25 +163,27 @@ void ADefaultGameMode::Tick(float DeltaTime)
 				ovr_Leaderboard_WriteEntry("warehouse1", score, NULL, NULL, false);
 			}
 		}
+		else
+		{
+			// Something Timed out
+			bSendValidationRequest = false;
+			bGetScoreFromServer = false;
+			bSendScoreToServer = false;
+		}
 
-		ovrMessage *response = ovr_PopMessage();
-		if (response)
+		ovrMessage* response = ovr_PopMessage();
+		while (response)
 		{
 			int messageType = ovr_Message_GetType(response);
-			
-			if (messageType == ovrMessage_Entitlement_GetIsViewerEntitled)
-			{
-				UDebug::LogOnScreen("Entitlement request Received.", 10.f, FColor::Yellow);
-			}
-			else if (messageType == ovrMessage_Leaderboard_GetEntries)
+
+			if (messageType == ovrMessage_Leaderboard_GetEntries)
 			{
 				bGetScoreFromServer = false;
-				TimeToTimeOutMessage = 15.f;
+				TimeToTimeOutMessage = TimeOutTime;
 
-				if (ovr_Message_IsError(response) != 0) 
+				if (ovr_Message_IsError(response) != 0)
 				{
-					FString stringuu(ovr_Error_GetMessage(ovr_Message_GetError(response)));
-					UDebug::LogOnScreen("Error: " + stringuu, 20.f, FColor::Red);
+					UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
 				}
 				else
 				{
@@ -152,28 +192,30 @@ void ADefaultGameMode::Tick(float DeltaTime)
 					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
 					int count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
 
+					PlayerScores.Empty();
 					for (size_t i = 0; i < count; i++)
 					{
 						ovrLeaderboardEntryHandle Entry = ovr_LeaderboardEntryArray_GetElement(leaderboards, i);
-						
-						long long score = ovr_LeaderboardEntry_GetScore(Entry);
-						int rank = ovr_LeaderboardEntry_GetRank(Entry);
-						ovrUserHandle handle = ovr_LeaderboardEntry_GetUser(Entry);
-						FString OculusName(ovr_User_GetOculusID(handle));
 
-						UDebug::LogOnScreen("User Score: " + OculusName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), score, rank), 20.f, FColor::Emerald);
+						FPlayerScore PlayerScore;
+						PlayerScore.Score = (int32)ovr_LeaderboardEntry_GetScore(Entry);
+						PlayerScore.Rank = (int32)ovr_LeaderboardEntry_GetRank(Entry);
+						ovrUserHandle handle = ovr_LeaderboardEntry_GetUser(Entry);
+						PlayerScore.PlayerName = FString(ovr_User_GetOculusID(handle));
+
+						PlayerScores.Add(PlayerScore);
+						UDebug::LogOnScreen("User Score: " + PlayerScore.PlayerName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), PlayerScore.Score, PlayerScore.Rank), 20.f, FColor::Emerald);
 					}
 				}
 			}
 			else if (messageType == ovrMessage_Leaderboard_WriteEntry)
 			{
 				bSendScoreToServer = false;
-				TimeToTimeOutMessage = 15.f;
+				TimeToTimeOutMessage = TimeOutTime;
 
-				if (ovr_Message_IsError(response) != 0) 
+				if (ovr_Message_IsError(response) != 0)
 				{
-					FString stringuu(ovr_Error_GetMessage(ovr_Message_GetError(response)));
-					UDebug::LogOnScreen("Error: " + stringuu, 20.f, FColor::Red);
+					UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
 				}
 				else
 				{
@@ -191,43 +233,14 @@ void ADefaultGameMode::Tick(float DeltaTime)
 
 				bGetScoreFromServer = true;
 			}
-			else 
-			{
-				UDebug::LogOnScreen("Unknown OVR Request Received.", 10.f, FColor::Yellow);
-			}
-			ovr_FreeMessage(response);
-		}
-	}
-
-	if (ConnectAttempts < MaxConnectAttempts)
-	{
-		UDebug::LogOnScreen("Attempting user validation...", 15.f);
-		if (Online::GetIdentityInterface().IsValid())
-		{
-			if (Online::GetIdentityInterface()->GetUniquePlayerId(0).IsValid())
-			{
-				Online::GetIdentityInterface()->GetUserPrivilege(
-					*Online::GetIdentityInterface()->GetUniquePlayerId(0),
-					EUserPrivileges::CanPlay,
-					IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
-					{
-						if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
-							ADefaultGameMode::Shutdown();
-
-						else
-							ADefaultGameMode::AuthorizeUser();
-					}));
-			}
 			else
 			{
-				UDebug::LogOnScreen("Failed to get Unique Player ID", 15.f);
+				UDebug::LogOnScreen("Unknown OVR Request Received.", 10.f, FColor::Yellow);
+				UDebug::LogOnScreen(FString::Printf(TEXT("%i"), messageType), 10.f, FColor::Yellow);
 			}
+			ovr_FreeMessage(response);
+			response = ovr_PopMessage();
 		}
-		else
-		{
-			UDebug::LogOnScreen("Failed to get Identity Interface", 15.f);
-		}
-		ConnectAttempts++;
 	}
 
 	switch (CurrentGameMode)
