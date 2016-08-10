@@ -29,19 +29,17 @@ ADefaultGameMode::ADefaultGameMode()
 	bGetScoreFromServer = false;
 	bSendScoreToServer = false;
 	bHasUpdatedScore = false;
-	bSendValidationRequest = false;
+	bGetTopScoreFromServer = false;
 
 	CurrentGameMode = EGameMode::MenuMode;
 
 	TimeToResendMessage = 0;
-	TimeOutTime = 15.f;
+	TimeOutTime = 30.f;
 	TimeToTimeOutMessage = TimeOutTime;
 }
 
 void ADefaultGameMode::BeginPlay()
 {
-	//ovr_PlatformInitializeWindowsEx("1018182464968654", PLATFORM_PRODUCT_VERSION, PLATFORM_MAJOR_VERSION);
-	bSendValidationRequest = true;
 	TimeToTimeOutMessage = TimeOutTime;
 
 	Super::BeginPlay();
@@ -154,22 +152,28 @@ void ADefaultGameMode::Tick(float DeltaTime)
 			if (bGetScoreFromServer && TimeToResendMessage <= 0)
 			{
 				TimeToResendMessage = 0.1f;
-				UDebug::LogOnScreen("Sending Leader Board Get Request.");
-				ovr_Leaderboard_GetEntries("warehouse1", 3, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtCenteredOnViewer);
+				UDebug::LogOnScreen("Sending Leaderboard Get Request.");
+				ovr_Leaderboard_GetEntries(TCHAR_TO_ANSI(*CurrentLevel.ToLower()), 3, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtCenteredOnViewer);
+			}
+			else if (bGetTopScoreFromServer && TimeToResendMessage <= 0)
+			{
+				TimeToResendMessage = 0.1f;
+				UDebug::LogOnScreen("Sending Leaderboard Get Request (Top User).");
+				ovr_Leaderboard_GetEntries(TCHAR_TO_ANSI(*CurrentLevel.ToLower()), 1, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtTop);
 			}
 			else if (bSendScoreToServer && TimeToResendMessage <= 0)
 			{
 				TimeToResendMessage = 0.1;
-				UDebug::LogOnScreen("Sending Leader Board Write Request.");
-
+				UDebug::LogOnScreen("Sending Leaderboard Write Request.");
 				long long score = PlayerRef->GetScore();
-				ovr_Leaderboard_WriteEntry("warehouse1", score, NULL, NULL, false);
+				ovr_Leaderboard_WriteEntry(TCHAR_TO_ANSI(*CurrentLevel.ToLower()), score, NULL, NULL, false);
 			}
 		}
-		else
+		else if (bGetTopScoreFromServer || bGetScoreFromServer || bSendScoreToServer)
 		{
+			UDebug::LogOnScreen("Message Timed Out!", 15.f, FColor::Red);
 			// Something Timed out
-			bSendValidationRequest = false;
+			bGetTopScoreFromServer = false;
 			bGetScoreFromServer = false;
 			bSendScoreToServer = false;
 		}
@@ -192,17 +196,15 @@ void ADefaultGameMode::Tick(float DeltaTime)
 			}
 			else if (messageType == ovrMessage_Leaderboard_GetEntries)
 			{
-				bGetScoreFromServer = false;
-				TimeToTimeOutMessage = TimeOutTime;
-
 				if (ovr_Message_IsError(response) != 0)
-				{
 					UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
-				}
-				else
+
+				else if (bGetScoreFromServer)
 				{
+					bGetScoreFromServer = false;
+					TimeToTimeOutMessage = TimeOutTime;
+
 					UDebug::LogOnScreen("Received Leader Board Get Message", 10.f, FColor::Green);
-					
 					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
 					int count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
 
@@ -218,6 +220,35 @@ void ADefaultGameMode::Tick(float DeltaTime)
 						PlayerScore.PlayerName = FString(ovr_User_GetOculusID(handle));
 
 						PlayerScores.Add(PlayerScore);
+						UDebug::LogOnScreen("User Score: " + PlayerScore.PlayerName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), PlayerScore.Score, PlayerScore.Rank), 20.f, FColor::Emerald);
+						//bHasUpdatedScore = true;
+					}
+
+					if (PlayerScores.Num() > 0 && PlayerScores[0].Rank != 1)
+						bGetTopScoreFromServer = true;
+					else
+						bHasUpdatedScore = true;
+				}
+				else if (bGetTopScoreFromServer)
+				{
+					bGetTopScoreFromServer = false;
+					TimeToTimeOutMessage = TimeOutTime;
+
+					UDebug::LogOnScreen("Received Leader Board Get Message (Top User)", 10.f, FColor::Green);
+					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
+					int count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
+
+					for (size_t i = 0; i < count; i++)
+					{
+						ovrLeaderboardEntryHandle Entry = ovr_LeaderboardEntryArray_GetElement(leaderboards, i);
+
+						FPlayerScore PlayerScore;
+						PlayerScore.Score = (int32)ovr_LeaderboardEntry_GetScore(Entry);
+						PlayerScore.Rank = (int32)ovr_LeaderboardEntry_GetRank(Entry);
+						ovrUserHandle handle = ovr_LeaderboardEntry_GetUser(Entry);
+						PlayerScore.PlayerName = FString(ovr_User_GetOculusID(handle));
+
+						PlayerScores.Insert(PlayerScore, 0);
 						UDebug::LogOnScreen("User Score: " + PlayerScore.PlayerName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), PlayerScore.Score, PlayerScore.Rank), 20.f, FColor::Emerald);
 						bHasUpdatedScore = true;
 					}

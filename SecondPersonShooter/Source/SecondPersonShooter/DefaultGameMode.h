@@ -110,7 +110,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FPlayerScore> PlayerScores;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString CurrentLevel;
 
 protected:
 	void UpdateMenuMode(float DeltaTime);
@@ -156,7 +157,7 @@ protected:
 
 	bool bGetScoreFromServer;
 	bool bSendScoreToServer;
-	bool bSendValidationRequest;
+	bool bGetTopScoreFromServer;
 	bool bHasUpdatedScore;
 
 	FString PlayerOculusName;
