@@ -206,7 +206,7 @@ void ADefaultGameMode::Tick(float DeltaTime)
 
 					UDebug::LogOnScreen("Received Leader Board Get Message", 10.f, FColor::Green);
 					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
-					int count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
+					size_t count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
 
 					PlayerScores.Empty();
 					for (size_t i = 0; i < count; i++)
@@ -236,7 +236,7 @@ void ADefaultGameMode::Tick(float DeltaTime)
 
 					UDebug::LogOnScreen("Received Leader Board Get Message (Top User)", 10.f, FColor::Green);
 					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
-					int count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
+					size_t count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
 
 					for (size_t i = 0; i < count; i++)
 					{
