@@ -3,15 +3,15 @@
 #include "PlayerCharacter.h"
 #include "EnemyCharacter.h"
 #include "EnemySpawner.h"
-#include "Online.h"
+//#include "Online.h"
 #include "Engine.h"
 
-#include "../../Plugins/OculusPlatformPlugin/Source/ThirdParty/Oculus/LibOVRPlatform/LibOVRPlatform/include/OVR_Platform.h"
+//#include "include/OVR_Platform.h"
 
 static int ConnectAttempts;
 static int MaxConnectAttempts;
 static bool bIsAuthorized;
-ovrUserHandle PlayerHandle;
+//ovrUserHandle PlayerHandle;
 
 ADefaultGameMode::ADefaultGameMode()
 {
@@ -98,7 +98,7 @@ void ADefaultGameMode::AuthorizeUser()
 	UDebug::LogOnScreen("Authorization successful", 20.f);
 	ConnectAttempts = MaxConnectAttempts;
 	bIsAuthorized = true;
-	ovr_User_GetLoggedInUser();
+	//ovr_User_GetLoggedInUser();
 	//Online::GetIdentityInterface()->GetUserAccount(*Online::GetIdentityInterface()->GetUniquePlayerId(0).Get())->GetDisplayName();
 }
 
@@ -112,182 +112,182 @@ void ADefaultGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (ConnectAttempts < MaxConnectAttempts)
-	{
-		UDebug::LogOnScreen("Attempting user validation...", 15.f);
-		if (Online::GetIdentityInterface().IsValid())
-		{
-			if (Online::GetIdentityInterface()->GetUniquePlayerId(0).IsValid())
-			{
-				Online::GetIdentityInterface()->GetUserPrivilege(
-					*Online::GetIdentityInterface()->GetUniquePlayerId(0),
-					EUserPrivileges::CanPlay,
-					IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
-				{
-					if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
-						ADefaultGameMode::Shutdown();
+	//if (ConnectAttempts < MaxConnectAttempts)
+	//{
+	//	UDebug::LogOnScreen("Attempting user validation...", 15.f);
+	//	if (Online::GetIdentityInterface().IsValid())
+	//	{
+	//		if (Online::GetIdentityInterface()->GetUniquePlayerId(0).IsValid())
+	//		{
+	//			Online::GetIdentityInterface()->GetUserPrivilege(
+	//				*Online::GetIdentityInterface()->GetUniquePlayerId(0),
+	//				EUserPrivileges::CanPlay,
+	//				IOnlineIdentity::FOnGetUserPrivilegeCompleteDelegate::CreateLambda([](const FUniqueNetId &UserId, EUserPrivileges::Type Privilege, uint32 CheckResult)
+	//			{
+	//				if (CheckResult != (uint32)IOnlineIdentity::EPrivilegeResults::NoFailures)
+	//					ADefaultGameMode::Shutdown();
 
-					else
-						ADefaultGameMode::AuthorizeUser();
-				}));
-			}
-			else
-			{
-				UDebug::LogOnScreen("Failed to get Unique Player ID", 15.f);
-			}
-		}
-		else
-		{
-			UDebug::LogOnScreen("Failed to get Identity Interface", 15.f);
-		}
-		ConnectAttempts++;
-	}
+	//				else
+	//					ADefaultGameMode::AuthorizeUser();
+	//			}));
+	//		}
+	//		else
+	//		{
+	//			UDebug::LogOnScreen("Failed to get Unique Player ID", 15.f);
+	//		}
+	//	}
+	//	else
+	//	{
+	//		UDebug::LogOnScreen("Failed to get Identity Interface", 15.f);
+	//	}
+	//	ConnectAttempts++;
+	//}
 
-	if (bIsAuthorized)
-	{
-		TimeToResendMessage -= DeltaTime;
-		TimeToTimeOutMessage -= DeltaTime;
-		if (TimeToTimeOutMessage > 0)
-		{
-			if (bGetScoreFromServer && TimeToResendMessage <= 0)
-			{
-				TimeToResendMessage = 0.1f;
-				UDebug::LogOnScreen("Sending Leaderboard Get Request.");
-				ovr_Leaderboard_GetEntries(TCHAR_TO_ANSI(*CurrentLevel.ToLower()), 3, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtCenteredOnViewer);
-			}
-			else if (bGetTopScoreFromServer && TimeToResendMessage <= 0)
-			{
-				TimeToResendMessage = 0.1f;
-				UDebug::LogOnScreen("Sending Leaderboard Get Request (Top User).");
-				ovr_Leaderboard_GetEntries(TCHAR_TO_ANSI(*CurrentLevel.ToLower()), 1, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtTop);
-			}
-			else if (bSendScoreToServer && TimeToResendMessage <= 0)
-			{
-				TimeToResendMessage = 0.1;
-				UDebug::LogOnScreen("Sending Leaderboard Write Request.");
-				long long score = PlayerRef->GetScore();
-				ovr_Leaderboard_WriteEntry(TCHAR_TO_ANSI(*CurrentLevel.ToLower()), score, NULL, NULL, false);
-			}
-		}
-		else if (bGetTopScoreFromServer || bGetScoreFromServer || bSendScoreToServer)
-		{
-			UDebug::LogOnScreen("Message Timed Out!", 15.f, FColor::Red);
-			// Something Timed out
-			bGetTopScoreFromServer = false;
-			bGetScoreFromServer = false;
-			bSendScoreToServer = false;
-		}
+	//if (bIsAuthorized)
+	//{
+	//	TimeToResendMessage -= DeltaTime;
+	//	TimeToTimeOutMessage -= DeltaTime;
+	//	if (TimeToTimeOutMessage > 0)
+	//	{
+	//		if (bGetScoreFromServer && TimeToResendMessage <= 0)
+	//		{
+	//			TimeToResendMessage = 0.1f;
+	//			UDebug::LogOnScreen("Sending Leaderboard Get Request.");
+	//			ovr_Leaderboard_GetEntries(TCHAR_TO_ANSI(*CurrentLevel.ToLower()), 3, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtCenteredOnViewer);
+	//		}
+	//		else if (bGetTopScoreFromServer && TimeToResendMessage <= 0)
+	//		{
+	//			TimeToResendMessage = 0.1f;
+	//			UDebug::LogOnScreen("Sending Leaderboard Get Request (Top User).");
+	//			ovr_Leaderboard_GetEntries(TCHAR_TO_ANSI(*CurrentLevel.ToLower()), 1, ovrLeaderboard_FilterNone, ovrLeaderboard_StartAtTop);
+	//		}
+	//		else if (bSendScoreToServer && TimeToResendMessage <= 0)
+	//		{
+	//			TimeToResendMessage = 0.1;
+	//			UDebug::LogOnScreen("Sending Leaderboard Write Request.");
+	//			long long score = PlayerRef->GetScore();
+	//			ovr_Leaderboard_WriteEntry(TCHAR_TO_ANSI(*CurrentLevel.ToLower()), score, NULL, NULL, false);
+	//		}
+	//	}
+	//	else if (bGetTopScoreFromServer || bGetScoreFromServer || bSendScoreToServer)
+	//	{
+	//		UDebug::LogOnScreen("Message Timed Out!", 15.f, FColor::Red);
+	//		// Something Timed out
+	//		bGetTopScoreFromServer = false;
+	//		bGetScoreFromServer = false;
+	//		bSendScoreToServer = false;
+	//	}
 
-		ovrMessage* response = ovr_PopMessage();
-		while (response)
-		{
-			int messageType = ovr_Message_GetType(response);
+	//	ovrMessage* response = ovr_PopMessage();
+	//	while (response)
+	//	{
+	//		int messageType = ovr_Message_GetType(response);
 
-			if (messageType == ovrMessage_User_GetLoggedInUser)
-			{
-				if (ovr_Message_IsError(response) != 0)
-					UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
+	//		if (messageType == ovrMessage_User_GetLoggedInUser)
+	//		{
+	//			if (ovr_Message_IsError(response) != 0)
+	//				UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
 
-				else
-				{
-					PlayerHandle = ovr_Message_GetUser(response);
-					PlayerOculusName = ovr_User_GetOculusID(PlayerHandle);
-				}
-			}
-			else if (messageType == ovrMessage_Leaderboard_GetEntries)
-			{
-				if (ovr_Message_IsError(response) != 0)
-					UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
+	//			else
+	//			{
+	//				PlayerHandle = ovr_Message_GetUser(response);
+	//				PlayerOculusName = ovr_User_GetOculusID(PlayerHandle);
+	//			}
+	//		}
+	//		else if (messageType == ovrMessage_Leaderboard_GetEntries)
+	//		{
+	//			if (ovr_Message_IsError(response) != 0)
+	//				UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
 
-				else if (bGetScoreFromServer)
-				{
-					bGetScoreFromServer = false;
-					TimeToTimeOutMessage = TimeOutTime;
+	//			else if (bGetScoreFromServer)
+	//			{
+	//				bGetScoreFromServer = false;
+	//				TimeToTimeOutMessage = TimeOutTime;
 
-					UDebug::LogOnScreen("Received Leader Board Get Message", 10.f, FColor::Green);
-					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
-					size_t count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
+	//				UDebug::LogOnScreen("Received Leader Board Get Message", 10.f, FColor::Green);
+	//				ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
+	//				size_t count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
 
-					PlayerScores.Empty();
-					for (size_t i = 0; i < count; i++)
-					{
-						ovrLeaderboardEntryHandle Entry = ovr_LeaderboardEntryArray_GetElement(leaderboards, i);
+	//				PlayerScores.Empty();
+	//				for (size_t i = 0; i < count; i++)
+	//				{
+	//					ovrLeaderboardEntryHandle Entry = ovr_LeaderboardEntryArray_GetElement(leaderboards, i);
 
-						FPlayerScore PlayerScore;
-						PlayerScore.Score = (int32)ovr_LeaderboardEntry_GetScore(Entry);
-						PlayerScore.Rank = (int32)ovr_LeaderboardEntry_GetRank(Entry);
-						ovrUserHandle handle = ovr_LeaderboardEntry_GetUser(Entry);
-						PlayerScore.PlayerName = FString(ovr_User_GetOculusID(handle));
+	//					FPlayerScore PlayerScore;
+	//					PlayerScore.Score = (int32)ovr_LeaderboardEntry_GetScore(Entry);
+	//					PlayerScore.Rank = (int32)ovr_LeaderboardEntry_GetRank(Entry);
+	//					ovrUserHandle handle = ovr_LeaderboardEntry_GetUser(Entry);
+	//					PlayerScore.PlayerName = FString(ovr_User_GetOculusID(handle));
 
-						PlayerScores.Add(PlayerScore);
-						UDebug::LogOnScreen("User Score: " + PlayerScore.PlayerName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), PlayerScore.Score, PlayerScore.Rank), 20.f, FColor::Emerald);
-						//bHasUpdatedScore = true;
-					}
+	//					PlayerScores.Add(PlayerScore);
+	//					UDebug::LogOnScreen("User Score: " + PlayerScore.PlayerName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), PlayerScore.Score, PlayerScore.Rank), 20.f, FColor::Emerald);
+	//					//bHasUpdatedScore = true;
+	//				}
 
-					if (PlayerScores.Num() > 0 && PlayerScores[0].Rank != 1)
-						bGetTopScoreFromServer = true;
-					else
-						bHasUpdatedScore = true;
-				}
-				else if (bGetTopScoreFromServer)
-				{
-					bGetTopScoreFromServer = false;
-					TimeToTimeOutMessage = TimeOutTime;
+	//				if (PlayerScores.Num() > 0 && PlayerScores[0].Rank != 1)
+	//					bGetTopScoreFromServer = true;
+	//				else
+	//					bHasUpdatedScore = true;
+	//			}
+	//			else if (bGetTopScoreFromServer)
+	//			{
+	//				bGetTopScoreFromServer = false;
+	//				TimeToTimeOutMessage = TimeOutTime;
 
-					UDebug::LogOnScreen("Received Leader Board Get Message (Top User)", 10.f, FColor::Green);
-					ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
-					size_t count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
+	//				UDebug::LogOnScreen("Received Leader Board Get Message (Top User)", 10.f, FColor::Green);
+	//				ovrLeaderboardEntryArrayHandle leaderboards = ovr_Message_GetLeaderboardEntryArray(response);
+	//				size_t count = ovr_LeaderboardEntryArray_GetSize(leaderboards);
 
-					for (size_t i = 0; i < count; i++)
-					{
-						ovrLeaderboardEntryHandle Entry = ovr_LeaderboardEntryArray_GetElement(leaderboards, i);
+	//				for (size_t i = 0; i < count; i++)
+	//				{
+	//					ovrLeaderboardEntryHandle Entry = ovr_LeaderboardEntryArray_GetElement(leaderboards, i);
 
-						FPlayerScore PlayerScore;
-						PlayerScore.Score = (int32)ovr_LeaderboardEntry_GetScore(Entry);
-						PlayerScore.Rank = (int32)ovr_LeaderboardEntry_GetRank(Entry);
-						ovrUserHandle handle = ovr_LeaderboardEntry_GetUser(Entry);
-						PlayerScore.PlayerName = FString(ovr_User_GetOculusID(handle));
+	//					FPlayerScore PlayerScore;
+	//					PlayerScore.Score = (int32)ovr_LeaderboardEntry_GetScore(Entry);
+	//					PlayerScore.Rank = (int32)ovr_LeaderboardEntry_GetRank(Entry);
+	//					ovrUserHandle handle = ovr_LeaderboardEntry_GetUser(Entry);
+	//					PlayerScore.PlayerName = FString(ovr_User_GetOculusID(handle));
 
-						PlayerScores.Insert(PlayerScore, 0);
-						UDebug::LogOnScreen("User Score: " + PlayerScore.PlayerName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), PlayerScore.Score, PlayerScore.Rank), 20.f, FColor::Emerald);
-						bHasUpdatedScore = true;
-					}
-				}
-			}
-			else if (messageType == ovrMessage_Leaderboard_WriteEntry)
-			{
-				bSendScoreToServer = false;
-				TimeToTimeOutMessage = TimeOutTime;
+	//					PlayerScores.Insert(PlayerScore, 0);
+	//					UDebug::LogOnScreen("User Score: " + PlayerScore.PlayerName + FString::Printf(TEXT(" - Score: %i - Rank: %i"), PlayerScore.Score, PlayerScore.Rank), 20.f, FColor::Emerald);
+	//					bHasUpdatedScore = true;
+	//				}
+	//			}
+	//		}
+	//		else if (messageType == ovrMessage_Leaderboard_WriteEntry)
+	//		{
+	//			bSendScoreToServer = false;
+	//			TimeToTimeOutMessage = TimeOutTime;
 
-				if (ovr_Message_IsError(response) != 0)
-				{
-					UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
-				}
-				else
-				{
-					UDebug::LogOnScreen("Received Leader Board Write Message.", 10.f, FColor::Green);
+	//			if (ovr_Message_IsError(response) != 0)
+	//			{
+	//				UDebug::LogOnScreen(ovr_Error_GetMessage(ovr_Message_GetError(response)), 20.f, FColor::Red);
+	//			}
+	//			else
+	//			{
+	//				UDebug::LogOnScreen("Received Leader Board Write Message.", 10.f, FColor::Green);
 
-					// Retrieve your ovrLeaderboardUpdateStatusHandle
-					ovrLeaderboardUpdateStatusHandle updateStatus = ovr_Message_GetLeaderboardUpdateStatus(response);
-					bool didLeaderboardUpdate = ovr_LeaderboardUpdateStatus_GetDidUpdate(updateStatus);
+	//				// Retrieve your ovrLeaderboardUpdateStatusHandle
+	//				ovrLeaderboardUpdateStatusHandle updateStatus = ovr_Message_GetLeaderboardUpdateStatus(response);
+	//				bool didLeaderboardUpdate = ovr_LeaderboardUpdateStatus_GetDidUpdate(updateStatus);
 
-					if (didLeaderboardUpdate)
-						UDebug::LogOnScreen("Leader Board Updated Successfully.", FColor::Green);
-					else
-						UDebug::LogOnScreen("Failed to Update Leader Board.", FColor::Red);
-				}
+	//				if (didLeaderboardUpdate)
+	//					UDebug::LogOnScreen("Leader Board Updated Successfully.", FColor::Green);
+	//				else
+	//					UDebug::LogOnScreen("Failed to Update Leader Board.", FColor::Red);
+	//			}
 
-				bGetScoreFromServer = true;
-			}
-			else
-			{
-				UDebug::LogOnScreen("Unknown OVR Request Received.", 10.f, FColor::Yellow);
-				UDebug::LogOnScreen(FString::Printf(TEXT("%i"), messageType), 10.f, FColor::Yellow);
-			}
-			ovr_FreeMessage(response);
-			response = ovr_PopMessage();
-		}
-	}
+	//			bGetScoreFromServer = true;
+	//		}
+	//		else
+	//		{
+	//			UDebug::LogOnScreen("Unknown OVR Request Received.", 10.f, FColor::Yellow);
+	//			UDebug::LogOnScreen(FString::Printf(TEXT("%i"), messageType), 10.f, FColor::Yellow);
+	//		}
+	//		ovr_FreeMessage(response);
+	//		response = ovr_PopMessage();
+	//	}
+	//}
 
 	switch (CurrentGameMode)
 	{

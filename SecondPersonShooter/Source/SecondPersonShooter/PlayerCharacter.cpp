@@ -4,7 +4,6 @@
 #include "DefaultGameMode.h"
 #include "Engine.h"
 
-#include "../../Plugins/OculusPlatformPlugin/Source/ThirdParty/Oculus/LibOVRPlatform/LibOVRPlatform/include/OVR_Platform.h"
 
 APlayerCharacter::APlayerCharacter()
 {
